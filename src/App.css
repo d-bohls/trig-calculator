@@ -1,0 +1,129 @@
+.app {
+  display: flex;
+  flex-direction: column;
+  /* fill the viewport when content is short, but grow taller (and let the
+     page itself scroll) rather than clipping any panel's content */
+  min-height: 100vh;
+}
+
+.app__main {
+  flex: 1;
+  display: grid;
+  /* controls (fixed) | circle (aspect-locked, so the narrower share) |
+     graph (gets the larger share, since it's the one that uses the space) */
+  grid-template-columns: 440px minmax(280px, 1fr) minmax(320px, 1.3fr);
+  /* the row is sized by its tallest panel's content (normally the graph,
+     whose height follows its own width now that the plot is square). Every
+     panel stretches to match that height, and when the window is shorter
+     than it, the page scrolls rather than anything being squeezed. */
+  grid-template-rows: min-content;
+  align-items: stretch;
+  gap: 12px;
+  padding: 12px;
+}
+
+.app__panel {
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  padding: 12px;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+/* wraps each panel's content so it can be hidden as a unit. display: contents
+   keeps it from creating a box of its own, so the panels lay out exactly as
+   they did before they became collapsible. */
+.app__panel-body {
+  display: contents;
+}
+
+/* collapsing only makes sense stacked, where an unused section is something
+   to scroll past - so the control is hidden side by side, and the collapsed
+   flag with it. Widening the window reopens everything without discarding
+   which sections were closed. */
+.app__panel-toggle {
+  display: none;
+}
+
+@media (max-width: 1100px) {
+  .app__main {
+    /* grid's "auto" row sizing miscomputes intrinsic height for the
+       aspect-ratio circle SVG at this breakpoint, so stack with flex instead
+       (align-items: stretch here means "full-width panels", which is what
+       we want when stacked - same declaration as above, different axis) */
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* two classes deep to beat the global button reset in index.css, which is a
+     `button:not(...)` rule and so more specific than a lone class */
+  .app__panel .app__panel-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    width: 100%;
+    margin: -4px 0 8px;
+    padding: 4px 0;
+    border: none;
+    border-radius: 0;
+    background: none;
+    font: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted-text);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .app__panel .app__panel-toggle:hover {
+    color: var(--text-color);
+  }
+
+  .app__panel-chevron {
+    /* fixed box, so rotating it can't nudge the title sideways */
+    display: inline-block;
+    width: 14px;
+    text-align: center;
+    font-size: 16px;
+    line-height: 1;
+    transition: transform 120ms ease;
+  }
+
+  .app__panel[data-collapsed='true'] .app__panel-chevron {
+    transform: rotate(-90deg);
+  }
+
+  .app__panel[data-collapsed='true'] .app__panel-body {
+    display: none;
+  }
+
+  /* nothing below the header when closed, so don't reserve room for it */
+  .app__panel[data-collapsed='true'] .app__panel-toggle {
+    margin-bottom: -4px;
+  }
+}
+
+@media print {
+  .app {
+    height: auto;
+  }
+  .app__main {
+    display: block;
+  }
+  .app__panel {
+    border: none;
+    page-break-inside: avoid;
+  }
+  .app__panel--function {
+    display: none;
+  }
+  /* a collapsed section is a screen convenience - print the whole thing */
+  .app__panel-toggle {
+    display: none !important;
+  }
+  .app__panel-body {
+    display: contents !important;
+  }
+}

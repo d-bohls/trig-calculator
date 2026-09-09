@@ -1,0 +1,28 @@
+.automation-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 220px;
+}
+
+.automation-dialog__speed label {
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.automation-dialog__speed-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+}
+
+.automation-dialog__speed-row input {
+  flex: 1;
+}
+
+.automation-dialog__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+}

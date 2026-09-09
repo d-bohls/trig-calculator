@@ -1,0 +1,91 @@
+:root {
+  --bg: #f3f4f6;
+  --panel-bg: #ffffff;
+  --text-color: #111827;
+  --muted-text: #4b5563;
+  --border-color: #d1d5db;
+  --hover-bg: #e5e7eb;
+
+  font: 14px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif;
+  color-scheme: light dark;
+  color: var(--text-color);
+  background: var(--bg);
+  -webkit-font-smoothing: antialiased;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #0f1115;
+    --panel-bg: #1a1d24;
+    --text-color: #e5e7eb;
+    --muted-text: #9ca3af;
+    --border-color: #333846;
+    --hover-bg: #262a35;
+  }
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+button:not(.menu-bar__item, .menu-bar__label, .icon-button) {
+  border: 1px solid var(--border-color);
+  background: var(--panel-bg);
+  border-radius: 5px;
+  padding: 5px 12px;
+  cursor: pointer;
+}
+
+button:hover:not(:disabled, .icon-button) {
+  background: var(--hover-bg);
+}
+
+/* shared reset for icon-only buttons (gear icons, etc.) - any component that
+ * needs one should add this class alongside its own positioning class,
+ * rather than fighting the button reset above on a case-by-case basis */
+.icon-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  padding: 0;
+  border: none;
+  background: none;
+  border-radius: 6px;
+  color: var(--muted-text);
+  cursor: pointer;
+}
+
+.icon-button:hover {
+  color: var(--text-color);
+  background: var(--hover-bg);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+input[type='text'],
+input[type='number'] {
+  font: inherit;
+  color: inherit;
+  background: var(--panel-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 4px;
+  padding: 3px 6px;
+}
+
+a {
+  color: #2563eb;
+}

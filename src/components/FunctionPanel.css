@@ -1,0 +1,202 @@
+.function-panel {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  font-size: 13px;
+}
+
+/* the gear sits in its own row rather than floating over the controls, so
+   nothing overlaps and it lines up with the right edge of the panel. The
+   function type shares the row, filling space the gear alone left empty. */
+.function-panel__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  /* if the row ever runs out of room the gear drops to its own line, rather
+     than the row overflowing the panel */
+  flex-wrap: wrap;
+  row-gap: 6px;
+}
+
+.function-panel__type {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  /* space-between would otherwise be free to squeeze this, and the select is
+     what absorbs the shrink - silently trimming its own text to fit */
+  flex: none;
+}
+
+.function-panel__type select {
+  font: inherit;
+  padding: 1px 4px;
+  flex: none;
+  min-width: max-content;
+}
+
+.function-panel__columns {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.function-panel__group {
+  /* fixed width, no growing to fill spare space - the two groups sit
+   * tightly side by side (left-aligned) whenever the panel is wide enough
+   * for both, and stack (each still at this width) when it isn't.
+   * label 92 + field 90 + symbolic 80 + two 8px gaps = 278 */
+  flex: 0 1 278px;
+}
+
+/* the trig rows are written as equations, so their width follows how the call
+ * reads rather than a column of fixed boxes - let it size to its content. The
+ * column is wide enough for every sane setting; scroll rather than bleed out
+ * of the panel at 8 decimal places, where the rows get genuinely long. */
+.function-panel__group--trig {
+  flex: 0 1 auto;
+  max-width: 100%;
+  overflow-x: auto;
+}
+
+.function-panel__group h4 {
+  margin: 0 0 6px;
+  font-size: 12px;
+  text-decoration: underline;
+  font-weight: 600;
+  color: var(--muted-text);
+}
+
+.function-panel__row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 4px;
+}
+
+.function-panel__row label {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  /* wide enough for the longest "Name (x/y)" pairing so the number fields
+     still line up in a column */
+  min-width: 92px;
+}
+
+.function-panel__field {
+  position: relative;
+  display: flex;
+}
+
+.function-panel__row input[type='text'] {
+  width: 90px;
+  text-align: right;
+  padding: 2px 4px;
+}
+
+/* leave room for the stepper tucked against the field's inner right edge */
+.function-panel__field--stepped input[type='text'] {
+  padding-right: 16px;
+}
+
+/* always occupies its column even when empty, so rows don't jump as the
+ * angle moves on and off a special angle. Wide enough for the longest of
+ * them, the 15-degree family's "-(√6-√2)/4" */
+.function-panel__symbolic {
+  flex: none;
+  width: 80px;
+  font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 12px;
+  color: var(--muted-text);
+  white-space: nowrap;
+}
+
+/* monospace so the six calls line up in a tidy column down the group - the
+ * argument reads the same on every row, so the equals signs align without any
+ * fixed width doing the work */
+.function-panel__row--trig label,
+.function-panel__arc-result,
+.function-panel__note {
+  font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 12.5px;
+  letter-spacing: -0.2px;
+}
+
+/* min-widths hold the row steady as the angle's digit count changes, rather
+ * than letting the whole group breathe in and out while you type */
+.function-panel__row--trig .function-panel__call {
+  min-width: 124px;
+  white-space: nowrap;
+}
+
+.function-panel__row--trig .function-panel__call--arc {
+  /* every arc name is the same width, so nothing needs holding steady here */
+  min-width: 0;
+}
+
+/* the parentheses belong to the field they wrap, so they sit against it - at
+   the row's usual 8px gap the call reads as "Arcsin (  0.5000  ) =" */
+.function-panel__row--arc {
+  gap: 2px;
+}
+
+/* which then has to put the separation back before the trailing note */
+.function-panel__row--arc .function-panel__note {
+  margin-left: 14px;
+}
+
+.function-panel__arc-result {
+  flex: none;
+  min-width: 86px;
+  white-space: nowrap;
+}
+
+/* why a row can't return the selected angle, e.g. "-60° ∉ [0°, 180°]". Only
+ * ever appears on rows other than the selected one, whose range always holds
+ * the angle. */
+.function-panel__note {
+  flex: none;
+  min-width: 104px;
+  font-size: 11px;
+  color: var(--muted-text);
+  white-space: nowrap;
+}
+
+.function-panel__period {
+  margin-top: 8px;
+  /* buttons sit directly after the label, like the control on every other
+     row in this group, rather than being pushed out to the group edge */
+  justify-content: flex-start;
+}
+
+.function-panel__period-amount {
+  color: var(--muted-text);
+}
+
+/* the two buttons read as one segmented control rather than two loose ones */
+.function-panel__period-buttons {
+  display: flex;
+  flex: none;
+}
+
+/* two classes deep to beat the global button reset in index.css */
+.function-panel__period .function-panel__period-buttons button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
+}
+
+.function-panel__period .function-panel__period-buttons button:first-child {
+  border-radius: 5px 0 0 5px;
+}
+
+.function-panel__period .function-panel__period-buttons button:last-child {
+  border-radius: 0 5px 5px 0;
+  /* overlap so the pair shares a single divider instead of a double border */
+  margin-left: -1px;
+}

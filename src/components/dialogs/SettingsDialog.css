@@ -1,0 +1,81 @@
+.settings-dialog {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  min-width: 240px;
+}
+
+.settings-dialog__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.settings-dialog__row label {
+  font-size: 13px;
+}
+
+.settings-dialog__row input[type='number'],
+.settings-dialog__row input[type='text'] {
+  width: 90px;
+  text-align: right;
+  padding: 3px 6px;
+}
+
+.settings-dialog__row input[type='checkbox'] {
+  width: 16px;
+  height: 16px;
+}
+
+.settings-dialog__divider {
+  border: none;
+  border-top: 1px solid var(--border-color);
+  margin: 2px 0;
+  width: 100%;
+}
+
+.settings-dialog__hint {
+  font-size: 12px;
+  color: var(--muted-text);
+  margin: 0;
+  line-height: 1.4;
+}
+
+.settings-dialog__error {
+  color: #dc2626;
+  font-size: 12px;
+  margin: 0;
+}
+
+.settings-dialog__actions {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 8px;
+}
+
+/* anchors the stepper to the field's inner right edge, and keeps the digits
+   from running underneath it */
+.settings-dialog__stepped {
+  position: relative;
+  display: flex;
+}
+
+.settings-dialog__stepped input[type='text'],
+.settings-dialog__stepped input[type='number'] {
+  padding-right: 18px;
+}
+
+/* the browser's own spinner would sit alongside ours and looks nothing like
+   it - the input stays a number for its keyboard and validation */
+.settings-dialog__stepped input[type='number'] {
+  appearance: textfield;
+  -moz-appearance: textfield;
+}
+
+.settings-dialog__stepped input[type='number']::-webkit-outer-spin-button,
+.settings-dialog__stepped input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}

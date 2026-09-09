@@ -1,0 +1,68 @@
+.modal__overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.35);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+/* non-blocking (vbModeless) variant: the rest of the app stays clickable
+ * underneath, so pin the floating window to a corner instead of dead-center
+ * and don't intercept clicks outside its own box */
+.modal__overlay--modeless {
+  background: transparent;
+  justify-content: flex-end;
+  padding: 16px;
+  pointer-events: none;
+}
+
+.modal__overlay--modeless-top {
+  align-items: flex-start;
+}
+
+.modal__overlay--modeless-bottom {
+  align-items: flex-end;
+}
+
+.modal__overlay--modeless .modal__box {
+  pointer-events: auto;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.3);
+}
+
+.modal__box {
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border-radius: 10px;
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  min-width: 280px;
+  max-width: min(90vw, 480px);
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.modal__close {
+  background: none;
+  border: none;
+  font-size: 18px;
+  line-height: 1;
+  cursor: pointer;
+  color: var(--muted-text);
+}
+
+.modal__body {
+  padding: 14px;
+  overflow-y: auto;
+}

@@ -1,0 +1,63 @@
+.function-graph {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  min-width: 0;
+  gap: 6px;
+}
+
+/* the tangent toggle describes what the plot is showing rather than being a
+   buried preference, so it rides the toolbar with the buttons */
+.function-graph__toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  min-height: 28px;
+}
+
+.function-graph__toolbar-buttons {
+  display: flex;
+  gap: 2px;
+}
+
+.function-graph__tangent {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+.function-graph__canvas-wrap {
+  position: relative;
+  /* the plot is always square: its height comes from its own width rather
+   * than from whatever height the row happens to have */
+  flex: none;
+  aspect-ratio: 1 / 1;
+  min-width: 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border-color);
+}
+
+/* absolutely positioned so the canvas fills the wrapper without contributing
+ * any intrinsic size of its own back into the layout */
+.function-graph__canvas-wrap canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  cursor: crosshair;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+}
+
+.function-graph__readout {
+  font-size: 13px;
+  font-weight: 600;
+  text-align: center;
+}
