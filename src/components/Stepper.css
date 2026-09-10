@@ -29,15 +29,17 @@
   margin-left: -1px;
 }
 
-/* A finger, not a cursor. 44px is what Apple's guidelines ask for and clears
-   WCAG 2.2's 24px floor comfortably. The buttons only grow where something
-   blunt is doing the pointing, so a mouse-driven layout stays compact. Asking
-   about the pointer rather than the viewport width is the right question: a
-   touchscreen laptop is wide and still has fingers. */
+/* A finger, not a cursor. Wide enough to hit easily, but only a little taller
+   than the 24px field beside it: height is what stacks up down the panel, and
+   a 44px square pushed everything below these rows a long way down the page.
+   Both dimensions still clear WCAG 2.2's 24px floor.
+
+   Asking about the pointer rather than the viewport width is the right
+   question: a touchscreen laptop is wide and still has fingers. */
 @media (pointer: coarse) {
   .stepper .stepper__button {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
+    width: 40px;
+    height: 28px;
+    font-size: 16px;
   }
 }

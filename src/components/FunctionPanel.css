@@ -217,8 +217,8 @@
 /* same size a finger needs as the steppers above - see Stepper.css */
 @media (pointer: coarse) {
   .function-panel__period .function-panel__period-buttons button {
-    width: 44px;
-    height: 44px;
-    font-size: 18px;
+    width: 40px;
+    height: 28px;
+    font-size: 16px;
   }
 }
