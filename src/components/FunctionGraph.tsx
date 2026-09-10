@@ -24,6 +24,7 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragging = useRef(false);
   const [size, setSize] = useState({ width: 400, height: 380 });
+  const [dpr, setDpr] = useState(() => window.devicePixelRatio || 1);
   const [sweeping, setSweeping] = useState(false);
   const sweepFrame = useRef<number | null>(null);
 
@@ -106,10 +107,23 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     return () => observer.disconnect();
   }, []);
 
+  // The canvas is sized in device pixels, so it has to follow the device pixel
+  // ratio - and that can change without anything on the page changing size, by
+  // dragging the window to a monitor that scales differently. The resize
+  // observer above sees nothing then, so the plot would go on drawing at the
+  // old scale: too large for its box, spilling past the edges both ways. There
+  // is no event for this, so watch the resolution the page is being rendered
+  // at and re-arm after each change, since the query names the old value.
+  useEffect(() => {
+    const query = window.matchMedia(`(resolution: ${dpr}dppx)`);
+    const onChange = () => setDpr(window.devicePixelRatio || 1);
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, [dpr]);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
-    const dpr = window.devicePixelRatio || 1;
     // only the backing-store resolution is set here - the canvas's visual
     // size comes from CSS (absolutely positioned to fill its wrapper). Setting
     // an inline pixel height here instead would feed the measured height back
@@ -130,7 +144,7 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
       selectedRatio,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size, radians, functionMode, angleMode, inverseMode, graphWindow, showTangent]);
+  }, [size, dpr, radians, functionMode, angleMode, inverseMode, graphWindow, showTangent]);
 
 
   function handlePointer(clientX: number, clientY: number) {
