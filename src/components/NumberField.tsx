@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { formatNumber } from '../trig/format';
 import { valOf } from '../trig/valOf';
 
 interface NumberFieldProps {
@@ -13,7 +14,7 @@ interface NumberFieldProps {
 /** A textbox that shows a formatted number and commits on Enter or blur,
  *  mirroring the txtAngles/txtFunctions/txtRadius KeyPress(13)/LostFocus pattern. */
 function format(value: number, places: number): string {
-  return Number.isNaN(value) ? 'Undefined' : value.toFixed(places);
+  return Number.isNaN(value) ? 'Undefined' : formatNumber(value, places);
 }
 
 export default function NumberField({ value, places = 2, onCommit, className, title, highlighted }: NumberFieldProps) {

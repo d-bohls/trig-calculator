@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
 import { getCurrentGraphPoint } from '../trig/currentPoint';
+import { formatNumber } from '../trig/format';
 import { plotGraphPoints } from '../trig/graphPoints';
 import {
   AngleMode,
@@ -353,10 +354,10 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     const yPlaces = inverseMode ? anglePlaces : resultPlaces;
     if (selectedRatio.isUndefined) {
       return inverseMode
-        ? `(Undefined, ${currentPoint.yval.toFixed(yPlaces)})`
-        : `(${currentPoint.xval.toFixed(xPlaces)}, Undefined)`;
+        ? `(Undefined, ${formatNumber(currentPoint.yval, yPlaces)})`
+        : `(${formatNumber(currentPoint.xval, xPlaces)}, Undefined)`;
     }
-    return `(${currentPoint.xval.toFixed(xPlaces)}, ${currentPoint.yval.toFixed(yPlaces)})`;
+    return `(${formatNumber(currentPoint.xval, xPlaces)}, ${formatNumber(currentPoint.yval, yPlaces)})`;
   }
 
   return (

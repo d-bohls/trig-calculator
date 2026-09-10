@@ -3,6 +3,7 @@
 import { useRef } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
 import type { ReactNode } from 'react';
+import { formatNumber } from '../trig/format';
 import { lookupSymbolic, symbolicForFunction, symbolicRadians } from '../trig/symbolicTable';
 import {
   AngleMode,
@@ -188,7 +189,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     e.currentTarget.releasePointerCapture(e.pointerId);
   }
 
-  const fmt = (v: number, places: number) => v.toFixed(places);
+  const fmt = formatNumber;
 
   // Everything here is formatted by the Function settings: the angle to its
   // decimal places, and every other number - the two lengths and what they come
@@ -235,11 +236,15 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     ) : (
       <>{fmt(radians, anglePlaces)}</>
     );
-  // the exact ratio sits immediately before the decimal it equals, so the line
+  // The exact ratio sits immediately before the decimal it equals, so the line
   // reads from the two lengths to what they come to, exactly and then rounded.
-  // Only at the angles that have an exact form - most don't.
+  // Only where that adds something: a radical or a fraction does, a whole
+  // number doesn't, since "0 = 0.0000" says the same thing twice running. The
+  // Functions panel keeps its whole numbers, because there they fill a column
+  // that would otherwise develop holes at 90 and 180 degrees.
   const ratioExact = symbolicForFunction(lookupSymbolic(degrees), functionMode);
-  const exactNode = ratioExact && ratioExact !== 'undefined' ? <Exact value={ratioExact} /> : null;
+  const worthShowing = !!ratioExact && ratioExact !== 'undefined' && !/^-?\d+$/.test(ratioExact);
+  const exactNode = worthShowing ? <Exact value={ratioExact as string} /> : null;
   const ratioNode = selectedRatio.isUndefined ? 'Undefined' : fmt(selectedRatio.value, resultPlaces);
 
   return (

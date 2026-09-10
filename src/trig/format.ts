@@ -11,3 +11,10 @@ export function displayAngle(degrees: number, angleMode: AngleMode, places: numb
   if (angleMode === AngleMode.Degrees) return `${degrees.toFixed(places)}°`;
   return symbolicRadians(degrees) ?? ((degrees * PI) / 180).toFixed(places);
 }
+
+/** toFixed, except a value that rounds to zero never comes back negative.
+ *  Sine of 180 degrees is -1.2e-16, which toFixed renders as "-0.0000". */
+export function formatNumber(value: number, places: number): string {
+  const text = value.toFixed(places);
+  return Number(text) === 0 ? Math.abs(value).toFixed(places) : text;
+}
