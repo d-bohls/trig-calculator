@@ -10,6 +10,7 @@
 import type { ReactNode } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
 import { displayAngle } from '../trig/format';
+import { parseNumber } from '../trig/parseNumber';
 import { lookupSymbolic, symbolicForFunction, symbolicRadians } from '../trig/symbolicTable';
 import {
   AngleMode,
@@ -88,8 +89,8 @@ export default function FunctionPanel({ api, onOpenSettings }: { api: Calculator
       }
       return;
     }
-    const parsed = parseFloat(raw);
-    if (Number.isFinite(parsed)) api.setRatio(parsed);
+    const parsed = parseNumber(raw);
+    if (parsed !== null) api.setRatio(parsed);
   }
 
   function renderTrigRow(fn: TrigFunction) {
@@ -188,7 +189,7 @@ export default function FunctionPanel({ api, onOpenSettings }: { api: Calculator
                 value={degrees}
                 places={anglePlaces}
                 highlighted={angleMode === AngleMode.Degrees}
-                onCommit={(_raw, parsed) => api.setDegrees(parsed)}
+                onCommit={(_raw, parsed) => parsed !== null && api.setDegrees(parsed)}
               />
             </Field>
             <Symbolic />
@@ -207,7 +208,7 @@ export default function FunctionPanel({ api, onOpenSettings }: { api: Calculator
                 value={radians}
                 places={anglePlaces}
                 highlighted={angleMode === AngleMode.Radians}
-                onCommit={(_raw, parsed) => api.setRadians(parsed)}
+                onCommit={(_raw, parsed) => parsed !== null && api.setRadians(parsed)}
               />
             </Field>
             <Symbolic value={symbolicRadians(degrees) ?? undefined} />

@@ -1,11 +1,12 @@
 import { useState } from 'react';
 import { formatNumber } from '../trig/format';
-import { valOf } from '../trig/valOf';
+import { parseNumber } from '../trig/parseNumber';
 
 interface NumberFieldProps {
   value: number;
   places?: number;
-  onCommit: (raw: string, parsed: number) => void;
+  /** parsed is null when the text isn't a number; leave the value alone */
+  onCommit: (raw: string, parsed: number | null) => void;
   className?: string;
   title?: string;
   highlighted?: boolean;
@@ -26,7 +27,7 @@ export default function NumberField({ value, places = 2, onCommit, className, ti
   const shown = editing ? draft : format(value, places);
 
   function commit() {
-    if (editing) onCommit(draft, valOf(draft));
+    if (editing) onCommit(draft, parseNumber(draft));
     setEditing(false);
   }
 
