@@ -67,9 +67,9 @@ function splitFraction(value: string): [string, string] | null {
 /** A stacked fraction - numerator over denominator with a rule between. Laid
  *  out as a one-column grid so both halves fill the wider of the two and the
  *  rule spans the whole thing. */
-function Fraction({ top, bottom }: { top: ReactNode; bottom: ReactNode }) {
+function Fraction({ top, bottom, values }: { top: ReactNode; bottom: ReactNode; values?: boolean }) {
   return (
-    <span className="circle-panel__fraction">
+    <span className={values ? 'circle-panel__fraction circle-panel__fraction--values' : 'circle-panel__fraction'}>
       <span>{top}</span>
       <span className="circle-panel__fraction-bottom">{bottom}</span>
     </span>
@@ -219,6 +219,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   // undefined, which a bare "Undefined" does not
   const valueFraction = (
     <Fraction
+      values
       top={part(numerator, fmt(partValue[numerator], resultPlaces))}
       bottom={part(denominator, fmt(partValue[denominator], resultPlaces))}
     />

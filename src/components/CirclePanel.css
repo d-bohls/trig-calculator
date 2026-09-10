@@ -62,6 +62,13 @@
   padding: 0 3px;
 }
 
+/* The two lengths are measurements, so their digits should sit under each
+   other. Centred, a minus sign on one of them shunts every digit half a
+   character across from the digit it belongs above. */
+.circle-panel__fraction--values {
+  text-align: right;
+}
+
 .circle-panel__fraction-bottom {
   /* explicit color rather than currentColor: the halves are colored for the
      lines they name, and the rule belongs to neither of them */
@@ -89,11 +96,15 @@
     font-size: 24px;
   }
 
-  /* Everything in here is scaled down with the drawing, which would leave the
-     triangle at well under a pixel. These are viewBox units, so nearly three
-     times the desktop width lands a little heavier than desktop on screen,
-     which is what a diagram this small wants. */
-  .circle-panel__segment,
+  /* Everything else in here is scaled down with the drawing, which would leave
+     the triangle at well under a pixel. These are viewBox units, so roughly
+     two and a half times the desktop width lands about where the desktop one
+     does on screen - and a little heavier, which is what a small diagram
+     wants. */
+  .circle-panel__segment {
+    stroke-width: 7;
+  }
+
   .circle-panel__bar {
     stroke-width: 7;
   }
