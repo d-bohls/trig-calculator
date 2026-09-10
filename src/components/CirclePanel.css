@@ -89,9 +89,16 @@
     font-size: 24px;
   }
 
-  /* likewise the bars, which would otherwise thin to a hairline */
-  .circle-panel__disc,
-  .circle-panel__svg line {
+  /* Everything in here is scaled down with the drawing, which would leave the
+     triangle at well under a pixel. These are viewBox units, so nearly three
+     times the desktop width lands a little heavier than desktop on screen,
+     which is what a diagram this small wants. */
+  .circle-panel__segment,
+  .circle-panel__bar {
+    stroke-width: 7;
+  }
+
+  .circle-panel__disc {
     stroke-width: 2;
   }
 }

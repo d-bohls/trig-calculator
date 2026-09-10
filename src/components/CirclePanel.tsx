@@ -322,7 +322,13 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
         )}
 
         {segmentOrder.map((part) => (
-          <line key={part} {...SEGMENTS[part](px, py)} stroke={colors[part]} strokeWidth={2.5} />
+          <line
+            key={part}
+            className="circle-panel__segment"
+            {...SEGMENTS[part](px, py)}
+            stroke={colors[part]}
+            strokeWidth={2.5}
+          />
         ))}
 
         <circle cx={px} cy={py} r={5} fill="#111827" />
@@ -352,6 +358,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
         <line
           x1={CENTER_X}
           y1={BAR_NUMERATOR_Y}
+          className="circle-panel__bar"
           x2={CENTER_X + partValue[numerator] * CIRCLE_R}
           y2={BAR_NUMERATOR_Y}
           stroke={colors[numerator]}
@@ -360,6 +367,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
         <line
           x1={CENTER_X}
           y1={BAR_DENOMINATOR_Y}
+          className="circle-panel__bar"
           x2={CENTER_X + partValue[denominator] * CIRCLE_R}
           y2={BAR_DENOMINATOR_Y}
           stroke={colors[denominator]}
