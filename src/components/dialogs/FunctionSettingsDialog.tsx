@@ -19,13 +19,13 @@ export default function FunctionSettingsDialog({ api, onClose }: { api: Calculat
 
   function cancel() {
     const s = initial.current;
-    api.setDecimalPlaces(s.anglePlaces, s.resultPlaces, api.displayPlaces);
+    api.setDecimalPlaces(s.anglePlaces, s.resultPlaces);
     api.setAngleStep(s.angleStepDegrees);
     onClose();
   }
 
   function reset() {
-    api.setDecimalPlaces(DEFAULT_SETTINGS.anglePlaces, DEFAULT_SETTINGS.resultPlaces, api.displayPlaces);
+    api.setDecimalPlaces(DEFAULT_SETTINGS.anglePlaces, DEFAULT_SETTINGS.resultPlaces);
     api.setAngleStep(DEFAULT_SETTINGS.angleStepDegrees);
   }
 
@@ -45,10 +45,10 @@ export default function FunctionSettingsDialog({ api, onClose }: { api: Calculat
         </div>
         <hr className="settings-dialog__divider" />
         {row('Angle decimal places', api.anglePlaces, (v) =>
-          api.setDecimalPlaces(v, api.resultPlaces, api.displayPlaces),
+          api.setDecimalPlaces(v, api.resultPlaces),
         )}
         {row('Result decimal places', api.resultPlaces, (v) =>
-          api.setDecimalPlaces(api.anglePlaces, v, api.displayPlaces),
+          api.setDecimalPlaces(api.anglePlaces, v),
         )}
         <div className="settings-dialog__actions">
           <button type="button" onClick={onClose}>

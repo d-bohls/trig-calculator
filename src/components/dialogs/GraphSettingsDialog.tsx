@@ -1,18 +1,19 @@
-// The graph window size (formerly Forms/frmZoom.frm). Every field applies
+// The graph window size (formerly Forms/frmZoom.frm) and how long the play
+// button's sweep takes. Every field applies
 // live; Cancel reverts everything back to how it was when the dialog was
 // opened. The tangent-line toggle sits on the panel's own toolbar, next to
 // the button that opens this dialog.
 
 import { useRef, useState } from 'react';
 import type { CalculatorApi } from '../../state/useCalculatorState';
-import { defaultGraphWindow } from '../../state/persistence';
+import { DEFAULT_SETTINGS, defaultGraphWindow } from '../../state/persistence';
 import Modal from '../Modal';
 import './SettingsDialog.css';
 
 type FieldKey = 'xMin' | 'xMax' | 'yMin' | 'yMax';
 
 export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorApi; onClose: () => void }) {
-  const initial = useRef({ window: api.graphWindow });
+  const initial = useRef({ window: api.graphWindow, sweepSeconds: api.sweepSeconds });
 
   const [xMin, setXMin] = useState(String(api.graphWindow.xMin));
   const [xMax, setXMax] = useState(String(api.graphWindow.xMax));
@@ -55,6 +56,7 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
 
   function cancel() {
     api.setGraphWindow(initial.current.window);
+    api.setSweepSeconds(initial.current.sweepSeconds);
     onClose();
   }
 
@@ -70,6 +72,7 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
     setYMax(String(d.yMax));
     setError(null);
     api.setGraphWindow(d);
+    api.setSweepSeconds(DEFAULT_SETTINGS.sweepSeconds);
   }
 
   const field = (label: string, value: string, key: FieldKey) => (
@@ -93,6 +96,22 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
         {field(`Min ${yLabel}`, yMin, 'yMin')}
         {field(`Max ${yLabel}`, yMax, 'yMax')}
         {error && <p className="settings-dialog__error">{error}</p>}
+        <hr className="settings-dialog__divider" />
+        <div className="settings-dialog__row">
+          <label htmlFor="graph-settings-sweep">Sweep time</label>
+          <div className="settings-dialog__slider">
+            <input
+              id="graph-settings-sweep"
+              type="range"
+              min={2}
+              max={60}
+              step={1}
+              value={api.sweepSeconds}
+              onChange={(e) => api.setSweepSeconds(Number(e.target.value))}
+            />
+            <span className="settings-dialog__slider-value">{api.sweepSeconds}s</span>
+          </div>
+        </div>
         <div className="settings-dialog__actions">
           <button type="button" onClick={onClose}>
             OK

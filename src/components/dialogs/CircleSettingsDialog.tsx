@@ -1,17 +1,17 @@
-// The circle's own settings: the radius, and the decimal places the readout
-// under it is printed to. Both apply live; Cancel reverts back to whatever
-// they were when the dialog was opened.
+// The circle's own settings: currently just the radius. Applies live; Cancel
+// reverts back to whatever it was when the dialog was opened. The readout's
+// decimal places come from the Function settings, so there is only one place
+// to set them.
 
 import { useRef, useState } from 'react';
 import type { CalculatorApi } from '../../state/useCalculatorState';
 import { DEFAULT_SETTINGS } from '../../state/persistence';
 import Modal from '../Modal';
 import Stepper from '../Stepper';
-import SteppedNumberInput from './SteppedNumberInput';
 import './SettingsDialog.css';
 
 export default function CircleSettingsDialog({ api, onClose }: { api: CalculatorApi; onClose: () => void }) {
-  const initial = useRef({ radius: api.radius, displayPlaces: api.displayPlaces });
+  const initial = useRef({ radius: api.radius });
   // two quick clicks on the stepper land in the same render, so the delta has
   // to come off a ref - read from state, the second click would still see the
   // value the first one replaced and the step would be lost
@@ -32,10 +32,6 @@ export default function CircleSettingsDialog({ api, onClose }: { api: Calculator
     api.setRadius(parsed);
   }
 
-  function setPlaces(places: number) {
-    api.setDecimalPlaces(api.anglePlaces, api.resultPlaces, places);
-  }
-
   /* A whole unit per click: radius is a plain scale factor, and 1, 2, 3 are
      the values anyone actually reaches for. It can't be stepped to zero or
      below, which the field would reject anyway. */
@@ -51,7 +47,6 @@ export default function CircleSettingsDialog({ api, onClose }: { api: Calculator
   function cancel() {
     latestRadius.current = initial.current.radius;
     api.setRadius(initial.current.radius);
-    setPlaces(initial.current.displayPlaces);
     onClose();
   }
 
@@ -60,7 +55,6 @@ export default function CircleSettingsDialog({ api, onClose }: { api: Calculator
     setError(null);
     latestRadius.current = DEFAULT_SETTINGS.radius;
     api.setRadius(DEFAULT_SETTINGS.radius);
-    setPlaces(DEFAULT_SETTINGS.displayPlaces);
   }
 
   return (
@@ -74,10 +68,6 @@ export default function CircleSettingsDialog({ api, onClose }: { api: Calculator
           </div>
         </div>
         {error && <p className="settings-dialog__error">{error}</p>}
-        <div className="settings-dialog__row">
-          <label htmlFor="circle-settings-places">Decimal places</label>
-          <SteppedNumberInput id="circle-settings-places" value={api.displayPlaces} min={0} max={8} onChange={setPlaces} />
-        </div>
         <div className="settings-dialog__actions">
           <button type="button" onClick={onClose}>
             OK

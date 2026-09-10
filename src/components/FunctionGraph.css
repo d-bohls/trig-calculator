@@ -8,18 +8,22 @@
 }
 
 /* the tangent toggle describes what the plot is showing rather than being a
-   buried preference, so it rides the toolbar with the buttons */
+   buried preference, so it rides the toolbar with the buttons.
+
+   Three columns rather than a flex row: the outer two take equal shares of the
+   free space, which puts the play button in the middle column at the true
+   center of the panel, not merely between its neighbors. minmax(0, 1fr) so a
+   long label shrinks its own column instead of shoving the center off. */
 .function-graph__toolbar {
-  display: flex;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
   align-items: center;
-  justify-content: space-between;
   gap: 12px;
   min-height: 28px;
 }
 
-.function-graph__toolbar-buttons {
-  display: flex;
-  gap: 2px;
+.function-graph__settings {
+  justify-self: end;
 }
 
 .function-graph__tangent {

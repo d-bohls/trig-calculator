@@ -13,7 +13,6 @@ import {
   PI,
   slopeAt,
 } from '../trig/trigMath';
-import AutomationDialog from './dialogs/AutomationDialog';
 import GraphSettingsDialog from './dialogs/GraphSettingsDialog';
 import GearIcon from './GearIcon';
 import PlayIcon from './PlayIcon';
@@ -35,10 +34,74 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const dragging = useRef(false);
   const [size, setSize] = useState({ width: 400, height: 380 });
   const [settingsOpen, setSettingsOpen] = useState(false);
-  const [automationOpen, setAutomationOpen] = useState(false);
+  const [sweeping, setSweeping] = useState(false);
+  const sweepFrame = useRef<number | null>(null);
 
   const { radians, functionMode, angleMode, inverseMode, graphWindow, selectedRatio, degrees, showTangent } = api;
+  const { anglePlaces, resultPlaces } = api;
   const currentPoint = getCurrentGraphPoint({ radians, degrees, angleMode, inverseMode, ratio: selectedRatio });
+
+  function stopSweep() {
+    if (sweepFrame.current !== null) {
+      cancelAnimationFrame(sweepFrame.current);
+      sweepFrame.current = null;
+    }
+    setSweeping(false);
+  }
+
+  useEffect(() => stopSweep, []);
+
+  // A sweep is something to watch, not a mode to be trapped in, so it yields
+  // the moment the user reaches for anything. The listener only cancels; it
+  // doesn't swallow the event, so whatever was clicked, dragged or typed still
+  // happens. Nothing is disabled and there's nothing to dismiss.
+  useEffect(() => {
+    if (!sweeping) return;
+    const interrupt = () => stopSweep();
+    document.addEventListener('pointerdown', interrupt, true);
+    return () => document.removeEventListener('pointerdown', interrupt, true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [sweeping]);
+
+  /** Walks the point from one edge of the window to the other. The range and
+   *  the function are read once, at the start, so the sweep is a self-contained
+   *  animation rather than something that changes shape underneath itself. */
+  function startSweep() {
+    stopSweep();
+    const fn = functionMode;
+    const unit = angleMode;
+    const inverse = inverseMode;
+    const from = inverse ? clampToArcDomain(fn, graphWindow.xMin) : graphWindow.xMin;
+    const to = inverse ? clampToArcDomain(fn, graphWindow.xMax) : graphWindow.xMax;
+    if (!(to > from)) return;
+
+    const apply = (xval: number) => {
+      if (!inverse) {
+        api.setRadians(unit === AngleMode.Degrees ? (xval * PI) / 180 : xval);
+        return;
+      }
+      const { radians: r, ok } = getRadians(fn, xval);
+      if (ok) api.setRadians(r);
+    };
+
+    // read once, so dragging the speed slider can't stretch a sweep already
+    // under way. Measured off the clock rather than counted in frames, so it
+    // takes the same time on any machine.
+    const sweepMs = Math.max(1, api.sweepSeconds) * 1000;
+    const startedAt = performance.now();
+    const step = (now: number) => {
+      const progress = Math.min(1, (now - startedAt) / sweepMs);
+      apply(from + (to - from) * progress);
+      if (progress < 1) {
+        sweepFrame.current = requestAnimationFrame(step);
+      } else {
+        sweepFrame.current = null;
+        setSweeping(false);
+      }
+    };
+    setSweeping(true);
+    sweepFrame.current = requestAnimationFrame(step);
+  }
 
   useEffect(() => {
     const el = containerRef.current;
@@ -282,6 +345,20 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     }
   }
 
+  /** The point's coordinates, each to the Function settings' places for what it
+   *  actually is - the angle axis to the angle places, the ratio axis to the
+   *  result places. Arc mode swaps which axis is which. */
+  function readoutText(): string {
+    const xPlaces = inverseMode ? resultPlaces : anglePlaces;
+    const yPlaces = inverseMode ? anglePlaces : resultPlaces;
+    if (selectedRatio.isUndefined) {
+      return inverseMode
+        ? `(Undefined, ${currentPoint.yval.toFixed(yPlaces)})`
+        : `(${currentPoint.xval.toFixed(xPlaces)}, Undefined)`;
+    }
+    return `(${currentPoint.xval.toFixed(xPlaces)}, ${currentPoint.yval.toFixed(yPlaces)})`;
+  }
+
   return (
     <div className="function-graph">
       <div className="function-graph__toolbar">
@@ -293,26 +370,24 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
           />
           Show tangent line
         </label>
-        <div className="function-graph__toolbar-buttons">
-          <button
-            type="button"
-            className="icon-button"
-            onClick={() => setAutomationOpen(true)}
-            aria-label="Automation"
-            title="Automation"
-          >
-            <PlayIcon />
-          </button>
-          <button
-            type="button"
-            className="icon-button"
-            onClick={() => setSettingsOpen(true)}
-            aria-label="Graph settings"
-            title="Graph settings"
-          >
-            <GearIcon />
-          </button>
-        </div>
+        <button
+          type="button"
+          className="icon-button function-graph__play"
+          onClick={startSweep}
+          aria-label="Sweep the point across the graph"
+          title="Sweep the point across the graph"
+        >
+          <PlayIcon />
+        </button>
+        <button
+          type="button"
+          className="icon-button function-graph__settings"
+          onClick={() => setSettingsOpen(true)}
+          aria-label="Graph settings"
+          title="Graph settings"
+        >
+          <GearIcon />
+        </button>
       </div>
       <div ref={containerRef} className="function-graph__canvas-wrap">
         <canvas
@@ -335,17 +410,8 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
           }}
         />
       </div>
-      <div className="function-graph__readout">
-        {selectedRatio.isUndefined
-          ? inverseMode
-            ? `(Undefined, ${currentPoint.yval.toFixed(2)})`
-            : `(${currentPoint.xval.toFixed(2)}, Undefined)`
-          : `(${currentPoint.xval.toFixed(2)}, ${currentPoint.yval.toFixed(2)})`}
-      </div>
-      {settingsOpen && (
-        <GraphSettingsDialog api={api} onClose={() => setSettingsOpen(false)} />
-      )}
-      {automationOpen && <AutomationDialog api={api} onClose={() => setAutomationOpen(false)} />}
+      <div className="function-graph__readout">{readoutText()}</div>
+      {settingsOpen && <GraphSettingsDialog api={api} onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }

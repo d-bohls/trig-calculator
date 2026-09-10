@@ -4,7 +4,14 @@ import { useRef, useState } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
 import type { ReactNode } from 'react';
 import { lookupSymbolic, symbolicForFunction, symbolicRadians } from '../trig/symbolicTable';
-import { PI, TrigFunction, TRIG_FUNCTION_FRACTIONS, TRIG_FUNCTION_LABELS, TWO_PI } from '../trig/trigMath';
+import {
+  AngleMode,
+  PI,
+  TrigFunction,
+  TRIG_FUNCTION_FRACTIONS,
+  TRIG_FUNCTION_LABELS,
+  TWO_PI,
+} from '../trig/trigMath';
 import CircleSettingsDialog from './dialogs/CircleSettingsDialog';
 import GearIcon from './GearIcon';
 import './CirclePanel.css';
@@ -27,7 +34,7 @@ const CENTER_Y = TOP_ROOM + CIRCLE_R;
 
 type Part = 'x' | 'y' | 'r';
 
-/** Colours go by role rather than by letter: whichever length is on top of the
+/** Colors go by role rather than by letter: whichever length is on top of the
  *  ratio is red, whichever is underneath is blue, and the one this function
  *  doesn't use stays neutral. */
 const COLORS: Record<TrigFunction, Record<Part, string>> = {
@@ -90,6 +97,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   const {
     radians,
     degrees,
+    angleMode,
     inverseMode,
     radius,
     functionMode,
@@ -97,7 +105,6 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     y,
     selectedRatio,
     anglePlaces,
-    displayPlaces,
     resultPlaces,
   } = api;
 
@@ -135,7 +142,21 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     return angle;
   }
 
+  /** Is the pointer within the drawn circle? A drag has to start inside it.
+   *  Outside is the side labels and empty margin, and on a phone a touch there
+   *  is far more likely to be someone scrolling the page than aiming at the
+   *  angle - which used to jump instead of the page moving. */
+  function isInsideCircle(clientX: number, clientY: number): boolean {
+    const svg = svgRef.current;
+    if (!svg) return false;
+    const rect = svg.getBoundingClientRect();
+    const localX = ((clientX - rect.left) / rect.width) * WIDTH;
+    const localY = ((clientY - rect.top) / rect.height) * HEIGHT;
+    return Math.hypot(localX - CENTER_X, localY - CENTER_Y) <= CIRCLE_R;
+  }
+
   function handlePointerDown(e: React.PointerEvent<SVGSVGElement>) {
+    if (!isInsideCircle(e.clientX, e.clientY)) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragging.current = true;
     api.setDegreesSnapped(shortestPathUpdate(radians, angleFromPointer(e.clientX, e.clientY)));
@@ -153,9 +174,15 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
 
   const fmt = (v: number, places: number) => v.toFixed(places);
 
+  // Everything here is formatted by the Function settings: the angle to its
+  // decimal places, and every other number - the two lengths and what they come
+  // to - to the result places. The circle had its own third setting for these,
+  // which only ever meant one line could disagree with another about how
+  // precise the same quantity was.
+  //
   // The readout is the selected call written out in full: the angle in both
   // units, which two lengths the ratio is, what this angle makes them, and what
-  // they come to. Each letter and its value carry the colour of the line it
+  // they come to. Each letter and its value carry the color of the line it
   // names in the diagram above, so the fraction can be read straight off the
   // picture. Sine is y/r, cosine x/r, and so on - the pairing comes from
   // TRIG_FUNCTION_FRACTIONS rather than being spelled out here.
@@ -167,20 +194,26 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   // undefined, which a bare "Undefined" does not
   const valueFraction = (
     <Fraction
-      top={part(numerator, fmt(partValue[numerator], displayPlaces))}
-      bottom={part(denominator, fmt(partValue[denominator], displayPlaces))}
+      top={part(numerator, fmt(partValue[numerator], resultPlaces))}
+      bottom={part(denominator, fmt(partValue[denominator], resultPlaces))}
     />
   );
 
   const label = TRIG_FUNCTION_LABELS[functionMode];
   const arcLabel = `Arc${label.toLowerCase()}`;
-  const degreesText = `${fmt(degrees, anglePlaces)}°`;
-  // exact where we have one, decimal where we don't - both for the angle in
-  // radians and for the ratio the call comes out to
-  const radiansExact = symbolicRadians(degrees);
-  const radiansNode = radiansExact ? <Exact value={radiansExact} /> : <>{fmt(radians, anglePlaces)}</>;
-  // the exact ratio earns its own term between the letters and the lengths,
-  // but only at the angles that have one - most don't
+  // just the unit the Functions panel has selected - showing both made the
+  // line say the same thing twice
+  const angleNode =
+    angleMode === AngleMode.Degrees ? (
+      <>{fmt(degrees, anglePlaces)}°</>
+    ) : symbolicRadians(degrees) ? (
+      <Exact value={symbolicRadians(degrees) as string} />
+    ) : (
+      <>{fmt(radians, anglePlaces)}</>
+    );
+  // the exact ratio sits immediately before the decimal it equals, so the line
+  // reads from the two lengths to what they come to, exactly and then rounded.
+  // Only at the angles that have an exact form - most don't.
   const ratioExact = symbolicForFunction(lookupSymbolic(degrees), functionMode);
   const exactNode = ratioExact && ratioExact !== 'undefined' ? <Exact value={ratioExact} /> : null;
   const ratioNode = selectedRatio.isUndefined ? 'Undefined' : fmt(selectedRatio.value, resultPlaces);
@@ -204,7 +237,15 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}
       >
-        <circle cx={CENTER_X} cy={CENTER_Y} r={CIRCLE_R} fill="#fffcf0" stroke="#111827" strokeWidth={1} />
+        <circle
+          className="circle-panel__disc"
+          cx={CENTER_X}
+          cy={CENTER_Y}
+          r={CIRCLE_R}
+          fill="#fffcf0"
+          stroke="#111827"
+          strokeWidth={1}
+        />
         <line
           x1={CENTER_X}
           y1={CENTER_Y - CIRCLE_R}
@@ -259,21 +300,17 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
               {arcLabel}({valueFraction})
             </span>
             <span>=</span>
-            <span>{degreesText}</span>
-            <span>=</span>
-            <span>{radiansNode}</span>
+            <span>{angleNode}</span>
           </>
         ) : (
           <>
             <span>
-              {label}({degreesText})
-            </span>
-            <span>=</span>
-            <span>
-              {label}({radiansNode})
+              {label}({angleNode})
             </span>
             <span>=</span>
             {letterFraction}
+            <span>=</span>
+            {valueFraction}
             <span>=</span>
             {exactNode && (
               <>
@@ -281,8 +318,6 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
                 <span>=</span>
               </>
             )}
-            {valueFraction}
-            <span>=</span>
             <span>{ratioNode}</span>
           </>
         )}

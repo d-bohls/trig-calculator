@@ -79,3 +79,22 @@
   -webkit-appearance: none;
   margin: 0;
 }
+
+/* a slider plus its current value, sized to line up with the number fields
+   above it rather than sprawling across the dialog */
+.settings-dialog__slider {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.settings-dialog__slider input[type='range'] {
+  width: 110px;
+}
+
+.settings-dialog__slider-value {
+  min-width: 30px;
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-text);
+}

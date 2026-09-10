@@ -52,13 +52,13 @@ export interface PersistedSettings {
   degrees: number;
   functionMode: TrigFunction;
   angleMode: AngleMode;
-  autoSpeed: number;
   inverseMode: boolean;
   anglePlaces: number;
   resultPlaces: number;
-  displayPlaces: number;
   /** how many whole degrees the angle steppers move per click */
   angleStepDegrees: number;
+  /** seconds one automated sweep takes, edge to edge of the graph window */
+  sweepSeconds: number;
   /** one window per graph kind, each as laid out on screen - so for the arc
    *  kinds, xMin/xMax bound the ratio and yMin/yMax the angle */
   graphWindows: Record<GraphKind, Bounds>;
@@ -70,14 +70,15 @@ export const DEFAULT_SETTINGS: PersistedSettings = {
   degrees: 30,
   functionMode: TrigFunction.Sine,
   angleMode: AngleMode.Degrees,
-  autoSpeed: 5,
   inverseMode: false,
   anglePlaces: 2,
   resultPlaces: 4,
-  displayPlaces: 2,
   // 15 walks the angle through the special angles, so the exact values stay
   // populated as you step
   angleStepDegrees: 15,
+  // slow enough to follow the point round the circle as it goes, rather than
+  // just watching it arrive
+  sweepSeconds: 12,
   graphWindows: DEFAULT_WINDOWS,
   showTangent: false,
 };

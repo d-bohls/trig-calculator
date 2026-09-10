@@ -50,12 +50,11 @@ interface State {
   degrees: number;
   functionMode: TrigFunction;
   angleMode: AngleMode;
-  autoSpeed: number;
   inverseMode: boolean;
   anglePlaces: number;
   resultPlaces: number;
-  displayPlaces: number;
   angleStepDegrees: number;
+  sweepSeconds: number;
   /** one window per graph kind - see GraphKind in persistence.ts. The active
    *  one follows from inverseMode and functionMode, so switching between them
    *  never disturbs a window you set up for another. */
@@ -78,9 +77,9 @@ type Action =
   | { type: 'SET_INVERSE_MODE'; enabled: boolean }
   | { type: 'SET_GRAPH_WINDOW'; window: GraphWindow }
   | { type: 'SET_SHOW_TANGENT'; show: boolean }
-  | { type: 'SET_DECIMAL_PLACES'; anglePlaces: number; resultPlaces: number; displayPlaces: number }
+  | { type: 'SET_DECIMAL_PLACES'; anglePlaces: number; resultPlaces: number }
   | { type: 'SET_ANGLE_STEP'; degrees: number }
-  | { type: 'SET_AUTO_SPEED'; autoSpeed: number }
+  | { type: 'SET_SWEEP_SECONDS'; seconds: number }
   | { type: 'RESTORE_GRAPH_WINDOW_DEFAULTS' }
   | { type: 'RESTORE_MASK_DEFAULTS' };
 
@@ -100,12 +99,11 @@ function init(): State {
     degrees: s.degrees,
     functionMode: s.functionMode,
     angleMode: s.angleMode,
-    autoSpeed: s.autoSpeed,
     inverseMode: s.inverseMode,
     anglePlaces: s.anglePlaces,
     resultPlaces: s.resultPlaces,
-    displayPlaces: s.displayPlaces,
     angleStepDegrees: s.angleStepDegrees,
+    sweepSeconds: s.sweepSeconds,
     graphWindows: s.graphWindows,
     showTangent: s.showTangent,
     savedDegrees: null,
@@ -194,12 +192,11 @@ function reducer(state: State, action: Action): State {
         ...state,
         anglePlaces: action.anglePlaces,
         resultPlaces: action.resultPlaces,
-        displayPlaces: action.displayPlaces,
       };
     case 'SET_ANGLE_STEP':
       return { ...state, angleStepDegrees: action.degrees };
-    case 'SET_AUTO_SPEED':
-      return { ...state, autoSpeed: action.autoSpeed };
+    case 'SET_SWEEP_SECONDS':
+      return { ...state, sweepSeconds: action.seconds };
     case 'RESTORE_GRAPH_WINDOW_DEFAULTS': {
       const kind = graphKindOf(state.inverseMode, state.functionMode);
       return {
@@ -212,7 +209,6 @@ function reducer(state: State, action: Action): State {
         ...state,
         anglePlaces: DEFAULT_SETTINGS.anglePlaces,
         resultPlaces: DEFAULT_SETTINGS.resultPlaces,
-        displayPlaces: DEFAULT_SETTINGS.displayPlaces,
       };
   }
 }
@@ -226,12 +222,11 @@ export function useCalculatorState() {
       degrees: state.degrees,
       functionMode: state.functionMode,
       angleMode: state.angleMode,
-      autoSpeed: state.autoSpeed,
       inverseMode: state.inverseMode,
       anglePlaces: state.anglePlaces,
       resultPlaces: state.resultPlaces,
-      displayPlaces: state.displayPlaces,
       angleStepDegrees: state.angleStepDegrees,
+      sweepSeconds: state.sweepSeconds,
       graphWindows: state.graphWindows,
       showTangent: state.showTangent,
     };
@@ -281,12 +276,12 @@ export function useCalculatorState() {
   const setGraphWindow = useCallback((window: GraphWindow) => dispatch({ type: 'SET_GRAPH_WINDOW', window }), []);
   const setShowTangent = useCallback((show: boolean) => dispatch({ type: 'SET_SHOW_TANGENT', show }), []);
   const setDecimalPlaces = useCallback(
-    (anglePlaces: number, resultPlaces: number, displayPlaces: number) =>
-      dispatch({ type: 'SET_DECIMAL_PLACES', anglePlaces, resultPlaces, displayPlaces }),
+    (anglePlaces: number, resultPlaces: number) =>
+      dispatch({ type: 'SET_DECIMAL_PLACES', anglePlaces, resultPlaces }),
     [],
   );
   const setAngleStep = useCallback((degrees: number) => dispatch({ type: 'SET_ANGLE_STEP', degrees }), []);
-  const setAutoSpeed = useCallback((autoSpeed: number) => dispatch({ type: 'SET_AUTO_SPEED', autoSpeed }), []);
+  const setSweepSeconds = useCallback((seconds: number) => dispatch({ type: 'SET_SWEEP_SECONDS', seconds }), []);
   const restoreGraphWindowDefaults = useCallback(() => dispatch({ type: 'RESTORE_GRAPH_WINDOW_DEFAULTS' }), []);
   const restoreMaskDefaults = useCallback(() => dispatch({ type: 'RESTORE_MASK_DEFAULTS' }), []);
 
@@ -313,7 +308,7 @@ export function useCalculatorState() {
     setShowTangent,
     setDecimalPlaces,
     setAngleStep,
-    setAutoSpeed,
+    setSweepSeconds,
     restoreGraphWindowDefaults,
     restoreMaskDefaults,
   };

@@ -20,7 +20,10 @@
   /* the circle sits flush with the top edge, so its stroke and the point
      marker at 90 degrees need to paint past it - see CirclePanel.tsx */
   overflow: visible;
-  touch-action: none;
+  /* everything outside the disc scrolls the page. On a phone the margins and
+     the side labels are easy to land on, and a touch there was moving the
+     angle instead of the page. */
+  touch-action: pan-y;
   cursor: crosshair;
   background: var(--panel-bg);
   border-radius: 8px;
@@ -28,9 +31,15 @@
   -webkit-user-select: none;
 }
 
+/* the disc itself claims the gesture, so dragging the angle still works - only
+   this element opts out of the page's scrolling */
+.circle-panel__disc {
+  touch-action: none;
+}
+
 .circle-panel__readout {
   /* a flex row rather than a run of text, so the stacked fractions and the
-     plain terms all sit on one shared vertical centre instead of the taller
+     plain terms all sit on one shared vertical center instead of the taller
      items shoving the line about */
   display: flex;
   flex-wrap: wrap;
@@ -51,7 +60,7 @@
   text-align: center;
   line-height: 1.25;
   /* matters where a fraction sits inside a call's brackets rather than being a
-     flex item of the row: keeps it centred against them instead of hanging off
+     flex item of the row: keeps it centered against them instead of hanging off
      the text baseline */
   vertical-align: middle;
 }
@@ -61,7 +70,7 @@
 }
 
 .circle-panel__fraction-bottom {
-  /* explicit colour rather than currentColor: the halves are coloured for the
+  /* explicit color rather than currentColor: the halves are colored for the
      lines they name, and the rule belongs to neither of them */
   border-top: 1px solid var(--text-color);
 }
