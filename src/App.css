@@ -39,10 +39,28 @@
   display: contents;
 }
 
+/* The panel's own row: its title and the buttons that belong to the panel as a
+   whole. Always present, because the buttons are - it is only the title that
+   comes and goes with the layout. */
+.app__panel-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 28px;
+  margin-bottom: 4px;
+}
+
+/* pushed to the end whether or not a title shares the row */
+.app__panel-actions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
 /* collapsing only makes sense stacked, where an unused section is something
-   to scroll past - so the control is hidden side by side, and the collapsed
-   flag with it. Widening the window reopens everything without discarding
-   which sections were closed. */
+   to scroll past - so the title is hidden side by side, and the collapsed flag
+   with it. Widening the window reopens everything without discarding which
+   sections were closed. */
 .app__panel-toggle {
   display: none;
 }
@@ -63,8 +81,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    width: 100%;
-    margin: -4px 0 8px;
+    margin: 0;
     padding: 4px 0;
     border: none;
     border-radius: 0;
@@ -100,8 +117,8 @@
   }
 
   /* nothing below the header when closed, so don't reserve room for it */
-  .app__panel[data-collapsed='true'] .app__panel-toggle {
-    margin-bottom: -4px;
+  .app__panel[data-collapsed='true'] .app__panel-head {
+    margin-bottom: 0;
   }
 }
 
@@ -120,7 +137,8 @@
     display: none;
   }
   /* a collapsed section is a screen convenience - print the whole thing */
-  .app__panel-toggle {
+  .app__panel-toggle,
+  .app__panel-actions {
     display: none !important;
   }
   .app__panel-body {

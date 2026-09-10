@@ -10,8 +10,6 @@ import { drawGraph, toMath } from '../graph/drawGraph';
 import { getCurrentGraphPoint } from '../trig/currentPoint';
 import { formatNumber } from '../trig/format';
 import { AngleMode, clampToArcDomain, getRadians, PI } from '../trig/trigMath';
-import GraphSettingsDialog from './dialogs/GraphSettingsDialog';
-import GearIcon from './GearIcon';
 import PlayIcon from './PlayIcon';
 import './FunctionGraph.css';
 
@@ -20,7 +18,6 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragging = useRef(false);
   const [size, setSize] = useState({ width: 400, height: 380 });
-  const [settingsOpen, setSettingsOpen] = useState(false);
   const [sweeping, setSweeping] = useState(false);
   const sweepFrame = useRef<number | null>(null);
 
@@ -182,15 +179,6 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
         >
           <PlayIcon />
         </button>
-        <button
-          type="button"
-          className="icon-button function-graph__settings"
-          onClick={() => setSettingsOpen(true)}
-          aria-label="Graph settings"
-          title="Graph settings"
-        >
-          <GearIcon />
-        </button>
       </div>
       <div ref={containerRef} className="function-graph__canvas-wrap">
         <canvas
@@ -214,7 +202,6 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
         />
       </div>
       <div className="function-graph__readout">{readoutText()}</div>
-      {settingsOpen && <GraphSettingsDialog api={api} onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }

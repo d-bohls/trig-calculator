@@ -21,7 +21,6 @@ import {
   TrigFunction,
   TRIG_FUNCTION_LABELS,
 } from '../trig/trigMath';
-import GearIcon from './GearIcon';
 import NumberField from './NumberField';
 import Stepper from './Stepper';
 import './FunctionPanel.css';
@@ -58,7 +57,7 @@ function displayRange(fn: TrigFunction, angleMode: AngleMode): string {
   return `${open}${bound(lower)}, ${bound(upper)}${close}`;
 }
 
-export default function FunctionPanel({ api, onOpenSettings }: { api: CalculatorApi; onOpenSettings: () => void }) {
+export default function FunctionPanel({ api }: { api: CalculatorApi }) {
   const { radians, degrees, angleMode, functionMode, inverseMode, ratios, anglePlaces, resultPlaces } = api;
   const symbolic = lookupSymbolic(degrees);
   const angleText = displayAngle(degrees, angleMode, anglePlaces);
@@ -161,15 +160,6 @@ export default function FunctionPanel({ api, onOpenSettings }: { api: Calculator
             <option value="arc">Inverse/Arc</option>
           </select>
         </label>
-        <button
-          type="button"
-          className="icon-button"
-          onClick={onOpenSettings}
-          aria-label="Function settings"
-          title="Function settings"
-        >
-          <GearIcon />
-        </button>
       </div>
 
       <div className="function-panel__columns">
