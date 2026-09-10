@@ -3,6 +3,14 @@
   flex-direction: column;
   gap: 14px;
   font-size: 13px;
+
+  /* The row is a label, then a field, then a stepper. Naming the three widths
+     lets the period row below place its own buttons in that same stepper
+     column instead of guessing at a pixel offset. */
+  --label-width: 92px;
+  --field-width: 90px;
+  --row-gap: 8px;
+  --field-gap: 4px;
 }
 
 /* the gear sits in its own row rather than floating over the controls, so
@@ -70,7 +78,7 @@
 .function-panel__row {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: var(--row-gap);
   margin-bottom: 4px;
 }
 
@@ -80,17 +88,17 @@
   gap: 4px;
   /* wide enough for the longest "Name (x/y)" pairing so the number fields
      still line up in a column */
-  min-width: 92px;
+  min-width: var(--label-width);
 }
 
 .function-panel__field {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: var(--field-gap);
 }
 
 .function-panel__row input[type='text'] {
-  width: 90px;
+  width: var(--field-width);
   text-align: right;
   padding: 2px 4px;
 }
@@ -163,9 +171,15 @@
 
 .function-panel__period {
   margin-top: 8px;
-  /* buttons sit directly after the label, like the control on every other
-     row in this group, rather than being pushed out to the group edge */
   justify-content: flex-start;
+}
+
+/* The label takes up exactly what a label plus a field takes up above it, so
+   these buttons land in the same column as the steppers rather than sitting
+   under the middle of the fields. The row's own gap then carries both to the
+   same edge. */
+.function-panel__period > span:first-child {
+  min-width: calc(var(--label-width) + var(--field-width) + var(--field-gap));
 }
 
 .function-panel__period-amount {
