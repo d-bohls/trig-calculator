@@ -283,11 +283,26 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           strokeWidth={1}
         />
 
-        <text x={CENTER_X + CIRCLE_R + 8} y={CENTER_Y + 4} fontSize="11" fill="#111827">
-          &lt; 0 Radians
+        {/* the unit is spelled out where there's room for it; on a phone the
+            circle is half this size and the arrows alone carry the meaning */}
+        <text
+          className="circle-panel__axis-label"
+          x={CENTER_X + CIRCLE_R + 8}
+          y={CENTER_Y + 4}
+          fontSize="11"
+          fill="#111827"
+        >
+          &lt; 0<tspan className="circle-panel__unit"> Radians</tspan>
         </text>
-        <text x={CENTER_X - CIRCLE_R - 8} y={CENTER_Y + 4} fontSize="11" fill="#111827" textAnchor="end">
-          π Radians &gt;
+        <text
+          className="circle-panel__axis-label"
+          x={CENTER_X - CIRCLE_R - 8}
+          y={CENTER_Y + 4}
+          fontSize="11"
+          fill="#111827"
+          textAnchor="end"
+        >
+          π<tspan className="circle-panel__unit"> Radians</tspan> &gt;
         </text>
 
         {showArc && (
