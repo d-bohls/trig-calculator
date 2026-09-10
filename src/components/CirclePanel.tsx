@@ -253,6 +253,8 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
         ref={svgRef}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
         className="circle-panel__svg"
+        role="img"
+        aria-label={`Unit circle at ${fmt(degrees, anglePlaces)} degrees, with ${numerator} over ${denominator} drawn as lengths. The equation below states the same thing in words.`}
         onPointerDown={handlePointerDown}
         onPointerMove={handlePointerMove}
         onPointerUp={handlePointerUp}

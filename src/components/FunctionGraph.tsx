@@ -9,7 +9,13 @@ import type { CalculatorApi } from '../state/useCalculatorState';
 import { drawGraph, toMath } from '../graph/drawGraph';
 import { getCurrentGraphPoint } from '../trig/currentPoint';
 import { formatNumber } from '../trig/format';
-import { AngleMode, clampToArcDomain, getRadians, PI } from '../trig/trigMath';
+import {
+  AngleMode,
+  clampToArcDomain,
+  getRadians,
+  PI,
+  TRIG_FUNCTION_NAMES,
+} from '../trig/trigMath';
 import PlayIcon from './PlayIcon';
 import './FunctionGraph.css';
 
@@ -183,6 +189,10 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
       <div ref={containerRef} className="function-graph__canvas-wrap">
         <canvas
           ref={canvasRef}
+          role="img"
+          aria-label={`${inverseMode ? 'Inverse ' : ''}${
+            TRIG_FUNCTION_NAMES[functionMode]
+          } plotted from ${graphWindow.xMin} to ${graphWindow.xMax}. Current point ${readoutText()}. Drag to move it; the angle can also be typed into the Functions panel.`}
           onPointerDown={(e) => {
             e.currentTarget.setPointerCapture(e.pointerId);
             dragging.current = true;

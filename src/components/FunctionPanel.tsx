@@ -98,6 +98,11 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
     const field = (
       <Field>
         <NumberField
+          ariaLabel={
+            inverseMode
+              ? `Ratio passed to ${arcName(fn)}`
+              : `${TRIG_FUNCTION_LABELS[fn]} of ${angleText}`
+          }
           value={ratio.isUndefined ? NaN : ratio.value}
           places={resultPlaces}
           highlighted={selected}
@@ -176,6 +181,7 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
             </label>
             <Field stepper={<Stepper onUp={() => api.nudgeAngle(1)} onDown={() => api.nudgeAngle(-1)} />}>
               <NumberField
+                ariaLabel="Angle in degrees"
                 value={degrees}
                 places={anglePlaces}
                 highlighted={angleMode === AngleMode.Degrees}
@@ -195,6 +201,7 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
             </label>
             <Field stepper={<Stepper onUp={() => api.nudgeAngle(1)} onDown={() => api.nudgeAngle(-1)} />}>
               <NumberField
+                ariaLabel="Angle in radians"
                 value={radians}
                 places={anglePlaces}
                 highlighted={angleMode === AngleMode.Radians}
