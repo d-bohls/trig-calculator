@@ -144,6 +144,14 @@
 .function-panel__row--trig .function-panel__call--arc {
   /* every arc name is the same width, so nothing needs holding steady here */
   min-width: 0;
+  /* but it must not be squeezed either: with a fixed-width field beside it,
+     a narrow panel was shrinking the call until "Arcsin(" read as "sin(".
+     The group scrolls instead - see .function-panel__group--trig. */
+  flex: none;
+}
+
+.function-panel__row--arc .function-panel__field {
+  flex: none;
 }
 
 /* the parentheses belong to the field they wrap, so they sit against it - at
