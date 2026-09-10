@@ -283,14 +283,19 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           strokeWidth={1}
         />
 
-        {/* the unit is spelled out where there's room for it; on a phone the
-            circle is half this size and the arrows alone carry the meaning */}
+        {/* These sit outside the disc, on the panel's own background, so they
+            take the theme's text color rather than the near-black that
+            everything inside the disc uses - that reads against the cream fill
+            in either theme, but would vanish out here in the dark one.
+
+            The unit is spelled out where there's room for it; on a phone the
+            circle is half this size and the arrows alone carry the meaning. */}
         <text
           className="circle-panel__axis-label"
           x={CENTER_X + CIRCLE_R + 8}
           y={CENTER_Y + 4}
           fontSize="11"
-          fill="#111827"
+          fill="var(--text-color)"
         >
           &lt; 0<tspan className="circle-panel__unit"> Radians</tspan>
         </text>
@@ -299,7 +304,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           x={CENTER_X - CIRCLE_R - 8}
           y={CENTER_Y + 4}
           fontSize="11"
-          fill="#111827"
+          fill="var(--text-color)"
           textAnchor="end"
         >
           π<tspan className="circle-panel__unit"> Radians</tspan> &gt;
@@ -325,7 +330,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           y1={BAR_NUMERATOR_Y - BAR_TICK}
           x2={CENTER_X}
           y2={BAR_DENOMINATOR_Y + BAR_TICK}
-          stroke="#111827"
+          stroke="var(--text-color)"
           strokeWidth={1}
         />
         <line
