@@ -28,6 +28,10 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
       - run: npm ci
+      # the deploy is the only gate this project has, so it checks before it
+      # publishes rather than after
+      - run: npm run lint
+      - run: npm test
       - run: npm run build
       - uses: actions/upload-pages-artifact@v5
         with:
