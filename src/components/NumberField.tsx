@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { valOf } from '../trig/valOf';
 
 interface NumberFieldProps {
@@ -17,15 +17,15 @@ function format(value: number, places: number): string {
 }
 
 export default function NumberField({ value, places = 2, onCommit, className, title, highlighted }: NumberFieldProps) {
-  const [text, setText] = useState(format(value, places));
+  // Only what's being typed is state. The rest of the time the box simply shows
+  // the current value, formatted - derived on the spot rather than copied into
+  // state and then kept in step with an effect.
+  const [draft, setDraft] = useState('');
   const [editing, setEditing] = useState(false);
-
-  useEffect(() => {
-    if (!editing) setText(format(value, places));
-  }, [value, places, editing]);
+  const shown = editing ? draft : format(value, places);
 
   function commit() {
-    onCommit(text, valOf(text));
+    if (editing) onCommit(draft, valOf(draft));
     setEditing(false);
   }
 
@@ -36,9 +36,12 @@ export default function NumberField({ value, places = 2, onCommit, className, ti
       className={className}
       title={title}
       style={highlighted ? { background: '#fffbcc', color: '#111827' } : undefined}
-      value={text}
-      onFocus={() => setEditing(true)}
-      onChange={(e) => setText(e.target.value)}
+      value={shown}
+      onFocus={() => {
+        setDraft(format(value, places));
+        setEditing(true);
+      }}
+      onChange={(e) => setDraft(e.target.value)}
       onBlur={commit}
       onKeyDown={(e) => {
         if (e.key === 'Enter') {

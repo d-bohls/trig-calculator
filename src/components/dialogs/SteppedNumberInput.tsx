@@ -6,7 +6,6 @@
 // number for the sake of its keyboard and validation; only the native spinner
 // is suppressed, in SettingsDialog.css.
 
-import { useRef } from 'react';
 import Stepper from '../Stepper';
 
 export default function SteppedNumberInput({
@@ -22,20 +21,16 @@ export default function SteppedNumberInput({
   max: number;
   onChange: (value: number) => void;
 }) {
-  // clicks land faster than React re-renders, so a second one would otherwise
-  // still read the prop the first has already replaced and its step be lost
-  const latest = useRef(value);
-  latest.current = value;
-
   function clamp(n: number): number {
     if (!Number.isFinite(n)) return min;
     return Math.min(max, Math.max(min, Math.round(n)));
   }
 
+  // Reading the prop is enough for the arrows to accumulate: a click is a
+  // discrete event, so React has already re-rendered with the new value before
+  // the next one arrives, however fast the clicking.
   function commit(n: number) {
-    const next = clamp(n);
-    latest.current = next;
-    onChange(next);
+    onChange(clamp(n));
   }
 
   return (
@@ -48,7 +43,7 @@ export default function SteppedNumberInput({
         value={value}
         onChange={(e) => commit(Number(e.target.value))}
       />
-      <Stepper onUp={() => commit(latest.current + 1)} onDown={() => commit(latest.current - 1)} />
+      <Stepper onUp={() => commit(value + 1)} onDown={() => commit(value - 1)} />
     </div>
   );
 }
