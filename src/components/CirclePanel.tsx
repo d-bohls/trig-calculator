@@ -327,6 +327,20 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
 
         <circle cx={px} cy={py} r={5} fill="#111827" />
 
+        {/* One invisible hit target over the whole disc, on top of everything.
+            touch-action is settled per element, and the segments and the marker
+            beneath this each answered for themselves - so a touch that landed
+            on a line panned the page while the drag was also turning the angle.
+            With this on top, every touch inside the circle hits one element,
+            which says no. */}
+        <circle
+          className="circle-panel__disc"
+          cx={CENTER_X}
+          cy={CENTER_Y}
+          r={CIRCLE_R}
+          fill="transparent"
+        />
+
         <line
           x1={CENTER_X}
           y1={BAR_NUMERATOR_Y - BAR_TICK}
