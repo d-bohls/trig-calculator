@@ -3,6 +3,10 @@
 .stepper {
   display: flex;
   flex: none;
+  /* no height of its own: it stretches to whatever field it sits beside, so the
+     buttons are exactly as tall as the box they belong to. The panel's fields
+     and the settings dialog's are not the same height, and this follows both. */
+  align-items: stretch;
 }
 
 /* two classes deep so this beats the global button reset in index.css, which
@@ -12,7 +16,6 @@
   align-items: center;
   justify-content: center;
   width: 28px;
-  height: 22px;
   padding: 0;
   font-size: 14px;
   line-height: 1;
@@ -29,17 +32,15 @@
   margin-left: -1px;
 }
 
-/* A finger, not a cursor. Wide enough to hit easily, but only a little taller
-   than the 24px field beside it: height is what stacks up down the panel, and
-   a 44px square pushed everything below these rows a long way down the page.
-   Both dimensions still clear WCAG 2.2's 24px floor.
+/* A finger, not a cursor: wider, but no taller, since the height belongs to the
+   field beside it and height is what stacks up down a phone screen. 40 by the
+   field's own 24 still clears WCAG 2.2's 24px floor in both directions.
 
    Asking about the pointer rather than the viewport width is the right
    question: a touchscreen laptop is wide and still has fingers. */
 @media (pointer: coarse) {
   .stepper .stepper__button {
     width: 40px;
-    height: 28px;
     font-size: 16px;
   }
 }

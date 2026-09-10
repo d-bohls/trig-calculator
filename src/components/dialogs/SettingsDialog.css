@@ -57,7 +57,9 @@
 
 .settings-dialog__stepped {
   display: flex;
-  align-items: center;
+  /* stretch, so the stepper matches the field's height - these fields are a
+     little taller than the ones on the panel */
+  align-items: stretch;
   gap: 4px;
 }
 

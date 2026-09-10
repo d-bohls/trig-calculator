@@ -9,6 +9,9 @@
      column instead of guessing at a pixel offset. */
   --label-width: 92px;
   --field-width: 90px;
+  /* every control on a row is this tall: the fields, the steppers that stretch
+     to them, and the period pair which has no field to take its height from */
+  --control-height: 24px;
   --row-gap: 8px;
   --field-gap: 4px;
 }
@@ -93,12 +96,14 @@
 
 .function-panel__field {
   display: flex;
-  align-items: center;
+  /* stretch, so the stepper beside the input matches its height exactly */
+  align-items: stretch;
   gap: var(--field-gap);
 }
 
 .function-panel__row input[type='text'] {
   width: var(--field-width);
+  height: var(--control-height);
   text-align: right;
   padding: 2px 4px;
 }
@@ -198,7 +203,7 @@
   align-items: center;
   justify-content: center;
   width: 28px;
-  height: 22px;
+  height: var(--control-height);
   padding: 0;
   font-size: 14px;
   line-height: 1;
@@ -218,7 +223,6 @@
 @media (pointer: coarse) {
   .function-panel__period .function-panel__period-buttons button {
     width: 40px;
-    height: 28px;
     font-size: 16px;
   }
 }
