@@ -101,9 +101,12 @@
   .app__panel-chevron {
     /* fixed box, so rotating it can't nudge the title sideways */
     display: inline-block;
-    width: 14px;
+    width: 18px;
     text-align: center;
-    font-size: 16px;
+    /* As large as it can be for free: the row is 28px and the button adds 4px
+       of padding either side, so anything up to 20 fits in space the header
+       already occupies. Past that the arrow starts pushing the panel down. */
+    font-size: 20px;
     line-height: 1;
     transition: transform 120ms ease;
   }
