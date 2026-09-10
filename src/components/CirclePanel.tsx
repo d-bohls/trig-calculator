@@ -1,6 +1,6 @@
 // Port of Modules/modCircle.bas (PaintCircleScreen + ChangeAngleFromMouse)
 
-import { useRef, useState } from 'react';
+import { useRef } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
 import type { ReactNode } from 'react';
 import { lookupSymbolic, symbolicForFunction, symbolicRadians } from '../trig/symbolicTable';
@@ -12,8 +12,6 @@ import {
   TRIG_FUNCTION_LABELS,
   TWO_PI,
 } from '../trig/trigMath';
-import CircleSettingsDialog from './dialogs/CircleSettingsDialog';
-import GearIcon from './GearIcon';
 import './CirclePanel.css';
 
 // the viewBox hugs the drawing: the circle plus room either side for the
@@ -28,9 +26,21 @@ const SIDE_LABEL_ROOM = 68;
 const TOP_ROOM = 0;
 const MARGIN = 8;
 const WIDTH = CIRCLE_R * 2 + (SIDE_LABEL_ROOM + MARGIN) * 2;
-const HEIGHT = TOP_ROOM + CIRCLE_R * 2 + MARGIN;
 const CENTER_X = WIDTH / 2;
 const CENTER_Y = TOP_ROOM + CIRCLE_R;
+
+// The two lengths the ratio is made of, laid flat below the circle: same
+// scale as the circle itself, and starting from its center, so they read as
+// the segments above dropped straight down and turned on their side. A tick
+// through both marks the zero they share, which is what makes their lengths
+// directly comparable - and which a negative length extends to the left of.
+// Restored from the original (modCircle.bas, "draw length indicators").
+const BAR_GAP = 22;
+const BAR_SPACING = 12;
+const BAR_NUMERATOR_Y = CENTER_Y + CIRCLE_R + BAR_GAP;
+const BAR_DENOMINATOR_Y = BAR_NUMERATOR_Y + BAR_SPACING;
+const BAR_TICK = 6;
+const HEIGHT = BAR_DENOMINATOR_Y + BAR_TICK + MARGIN;
 
 type Part = 'x' | 'y' | 'r';
 
@@ -71,6 +81,14 @@ function Exact({ value }: { value: string }) {
   return halves ? <Fraction top={halves[0]} bottom={halves[1]} /> : <>{value}</>;
 }
 
+/** Where each length is drawn: x along the axis, y up to the point, r straight
+ *  out to it. */
+const SEGMENTS: Record<Part, (px: number, py: number) => { x1: number; y1: number; x2: number; y2: number }> = {
+  x: (px) => ({ x1: CENTER_X, y1: CENTER_Y, x2: px, y2: CENTER_Y }),
+  y: (px, py) => ({ x1: px, y1: CENTER_Y, x2: px, y2: py }),
+  r: (px, py) => ({ x1: CENTER_X, y1: CENTER_Y, x2: px, y2: py }),
+};
+
 function normalizeAngle(radians: number): number {
   let a = radians % TWO_PI;
   if (a < 0) a += TWO_PI;
@@ -92,14 +110,11 @@ function shortestPathUpdate(currentRadians: number, pointerRadians: number): num
 export default function CirclePanel({ api }: { api: CalculatorApi }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const dragging = useRef(false);
-  const [settingsOpen, setSettingsOpen] = useState(false);
-
   const {
     radians,
     degrees,
     angleMode,
     inverseMode,
-    radius,
     functionMode,
     x,
     y,
@@ -108,10 +123,11 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     resultPlaces,
   } = api;
 
-  // The diagram is deliberately schematic: it's always drawn at the same pixel
-  // size, and radius scales only the numbers printed below it. There is no
-  // implied scale here other than the stated radius, so resizing the picture
-  // would suggest one that doesn't exist.
+  // It is the unit circle, so the radius is 1 and the two lengths are the
+  // ratios themselves. There was a radius setting once; it changed neither the
+  // drawing nor any answer, because a ratio of two lengths is the same whatever
+  // the circle's size - which is the whole reason the unit circle is the unit
+  // one.
   const px = CENTER_X + Math.cos(radians) * CIRCLE_R;
   const py = CENTER_Y - Math.sin(radians) * CIRCLE_R;
 
@@ -187,7 +203,15 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   // picture. Sine is y/r, cosine x/r, and so on - the pairing comes from
   // TRIG_FUNCTION_FRACTIONS rather than being spelled out here.
   const [numerator, denominator] = TRIG_FUNCTION_FRACTIONS[functionMode].split('/') as Part[];
-  const partValue: Record<Part, number> = { x, y, r: radius };
+  const partValue: Record<Part, number> = { x, y, r: 1 };
+
+  // The three segments overlap: at 180 degrees the radius lies exactly along
+  // x, and at 90 exactly along y. Whichever is drawn last wins, so draw the one
+  // this ratio doesn't use first - it's the neutral-colored one - then the
+  // denominator, then the numerator on top. The two lengths the answer is made
+  // of are then never hidden by the one that isn't.
+  const unusedPart = (['x', 'y', 'r'] as Part[]).find((p) => p !== numerator && p !== denominator)!;
+  const segmentOrder: Part[] = [unusedPart, denominator, numerator];
   const part = (p: Part, text: string) => <span style={{ color: readoutColor(colors[p]) }}>{text}</span>;
   const letterFraction = <Fraction top={part(numerator, numerator)} bottom={part(denominator, denominator)} />;
   // shown even where the ratio is undefined: 1.00 over 0.00 says why it's
@@ -220,15 +244,6 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
 
   return (
     <div className="circle-panel">
-      <button
-        type="button"
-        className="circle-panel__settings-button icon-button"
-        onClick={() => setSettingsOpen(true)}
-        aria-label="Circle settings"
-        title="Circle settings"
-      >
-        <GearIcon />
-      </button>
       <svg
         ref={svgRef}
         viewBox={`0 0 ${WIDTH} ${HEIGHT}`}
@@ -279,14 +294,36 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           />
         )}
 
-        {/* X line */}
-        <line x1={CENTER_X} y1={CENTER_Y} x2={px} y2={CENTER_Y} stroke={colors.x} strokeWidth={2.5} />
-        {/* Y line */}
-        <line x1={px} y1={CENTER_Y} x2={px} y2={py} stroke={colors.y} strokeWidth={2.5} />
-        {/* R line */}
-        <line x1={CENTER_X} y1={CENTER_Y} x2={px} y2={py} stroke={colors.r} strokeWidth={2.5} />
+        {segmentOrder.map((part) => (
+          <line key={part} {...SEGMENTS[part](px, py)} stroke={colors[part]} strokeWidth={2.5} />
+        ))}
 
         <circle cx={px} cy={py} r={5} fill="#111827" />
+
+        <line
+          x1={CENTER_X}
+          y1={BAR_NUMERATOR_Y - BAR_TICK}
+          x2={CENTER_X}
+          y2={BAR_DENOMINATOR_Y + BAR_TICK}
+          stroke="#111827"
+          strokeWidth={1}
+        />
+        <line
+          x1={CENTER_X}
+          y1={BAR_NUMERATOR_Y}
+          x2={CENTER_X + partValue[numerator] * CIRCLE_R}
+          y2={BAR_NUMERATOR_Y}
+          stroke={colors[numerator]}
+          strokeWidth={3}
+        />
+        <line
+          x1={CENTER_X}
+          y1={BAR_DENOMINATOR_Y}
+          x2={CENTER_X + partValue[denominator] * CIRCLE_R}
+          y2={BAR_DENOMINATOR_Y}
+          stroke={colors[denominator]}
+          strokeWidth={3}
+        />
       </svg>
 
       <div className="circle-panel__readout">
@@ -323,7 +360,6 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
         )}
       </div>
 
-      {settingsOpen && <CircleSettingsDialog api={api} onClose={() => setSettingsOpen(false)} />}
     </div>
   );
 }

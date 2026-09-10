@@ -46,7 +46,6 @@ function degreesFromRadians(radians: number): number {
 }
 
 interface State {
-  radius: number;
   degrees: number;
   functionMode: TrigFunction;
   angleMode: AngleMode;
@@ -70,7 +69,6 @@ type Action =
   | { type: 'SET_DEGREES'; degrees: number }
   | { type: 'SET_FUNCTION_MODE'; mode: TrigFunction }
   | { type: 'SET_ANGLE_MODE'; mode: AngleMode }
-  | { type: 'SET_RADIUS'; radius: number }
   | { type: 'SET_RATIO'; ratio: number }
   | { type: 'ADD_PERIOD'; sign: 1 | -1 }
   | { type: 'NUDGE_ANGLE'; sign: 1 | -1 }
@@ -95,7 +93,6 @@ function clampToInverseRange(degrees: number, mode: TrigFunction): number {
 function init(): State {
   const s = loadSettings();
   return {
-    radius: s.radius,
     degrees: s.degrees,
     functionMode: s.functionMode,
     angleMode: s.angleMode,
@@ -140,8 +137,6 @@ function reducer(state: State, action: Action): State {
       }
       return { ...state, angleMode: action.mode, graphWindows };
     }
-    case 'SET_RADIUS':
-      return { ...state, radius: action.radius };
     case 'SET_RATIO': {
       const { radians, ok } = getRadians(state.functionMode, action.ratio);
       if (!ok) return state;
@@ -218,7 +213,6 @@ export function useCalculatorState() {
 
   useEffect(() => {
     const toSave: PersistedSettings = {
-      radius: state.radius,
       degrees: state.degrees,
       functionMode: state.functionMode,
       angleMode: state.angleMode,
@@ -250,8 +244,9 @@ export function useCalculatorState() {
   );
 
   const selectedRatio = ratios[state.functionMode];
-  const x = Math.cos(radians) * state.radius;
-  const y = Math.sin(radians) * state.radius;
+  // the circle is the unit circle, so these are the ratios themselves
+  const x = Math.cos(radians);
+  const y = Math.sin(radians);
 
   const setDegrees = useCallback((degrees: number) => dispatch({ type: 'SET_DEGREES', degrees }), []);
   /** Entry point for anything that produces an angle in radians (the radians
@@ -268,7 +263,6 @@ export function useCalculatorState() {
   );
   const setFunctionMode = useCallback((mode: TrigFunction) => dispatch({ type: 'SET_FUNCTION_MODE', mode }), []);
   const setAngleMode = useCallback((mode: AngleMode) => dispatch({ type: 'SET_ANGLE_MODE', mode }), []);
-  const setRadius = useCallback((radius: number) => dispatch({ type: 'SET_RADIUS', radius }), []);
   const setRatio = useCallback((ratio: number) => dispatch({ type: 'SET_RATIO', ratio }), []);
   const addPeriod = useCallback((sign: 1 | -1) => dispatch({ type: 'ADD_PERIOD', sign }), []);
   const nudgeAngle = useCallback((sign: 1 | -1) => dispatch({ type: 'NUDGE_ANGLE', sign }), []);
@@ -299,7 +293,6 @@ export function useCalculatorState() {
     setRadians,
     setFunctionMode,
     setAngleMode,
-    setRadius,
     setRatio,
     addPeriod,
     nudgeAngle,

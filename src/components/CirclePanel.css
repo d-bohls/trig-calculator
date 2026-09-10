@@ -6,17 +6,10 @@
   gap: 8px;
 }
 
-.circle-panel__settings-button {
-  position: absolute;
-  top: 0;
-  right: 0;
-  z-index: 1;
-}
-
 .circle-panel__svg {
   width: 100%;
   max-width: 412px;
-  aspect-ratio: 412 / 268;
+  aspect-ratio: 412 / 308;
   /* the circle sits flush with the top edge, so its stroke and the point
      marker at 90 degrees need to paint past it - see CirclePanel.tsx */
   overflow: visible;

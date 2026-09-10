@@ -46,7 +46,6 @@ const DEFAULT_WINDOWS: Record<GraphKind, Bounds> = {
 };
 
 export interface PersistedSettings {
-  radius: number;
   /** the angle, stored in degrees - see degreesFromRadians in
    *  useCalculatorState for why degrees rather than radians */
   degrees: number;
@@ -66,7 +65,6 @@ export interface PersistedSettings {
 }
 
 export const DEFAULT_SETTINGS: PersistedSettings = {
-  radius: 1,
   degrees: 30,
   functionMode: TrigFunction.Sine,
   angleMode: AngleMode.Degrees,
