@@ -55,16 +55,10 @@
   margin-top: 8px;
 }
 
-/* anchors the stepper to the field's inner right edge, and keeps the digits
-   from running underneath it */
 .settings-dialog__stepped {
-  position: relative;
   display: flex;
-}
-
-.settings-dialog__stepped input[type='text'],
-.settings-dialog__stepped input[type='number'] {
-  padding-right: 18px;
+  align-items: center;
+  gap: 4px;
 }
 
 /* the browser's own spinner would sit alongside ours and looks nothing like

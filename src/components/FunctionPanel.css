@@ -84,8 +84,9 @@
 }
 
 .function-panel__field {
-  position: relative;
   display: flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .function-panel__row input[type='text'] {
@@ -94,10 +95,8 @@
   padding: 2px 4px;
 }
 
-/* leave room for the stepper tucked against the field's inner right edge */
-.function-panel__field--stepped input[type='text'] {
-  padding-right: 16px;
-}
+/* the stepper sits beside the field now rather than inside it, so the digits
+   need no room reserved on the right */
 
 /* always occupies its column even when empty, so rows don't jump as the
  * angle moves on and off a special angle. Wide enough for the longest of
@@ -199,4 +198,13 @@
   border-radius: 0 5px 5px 0;
   /* overlap so the pair shares a single divider instead of a double border */
   margin-left: -1px;
+}
+
+/* same size a finger needs as the steppers above - see Stepper.css */
+@media (pointer: coarse) {
+  .function-panel__period .function-panel__period-buttons button {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
 }

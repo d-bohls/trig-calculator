@@ -1,26 +1,43 @@
+/* one segmented control, not two loose buttons - the same shape as the period
+   pair on the Functions panel */
 .stepper {
-  position: absolute;
-  right: 2px;
-  top: 50%;
-  transform: translateY(-50%);
   display: flex;
-  flex-direction: column;
-  line-height: 1;
+  flex: none;
 }
 
 /* two classes deep so this beats the global button reset in index.css, which
  * is a `button:not(...)` rule and therefore more specific than a lone class */
 .stepper .stepper__button {
-  border: none;
-  background: none;
-  border-radius: 2px;
-  font-size: 7px;
-  padding: 0 2px;
-  line-height: 1.1;
-  color: var(--muted-text);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 22px;
+  padding: 0;
+  font-size: 14px;
+  line-height: 1;
   cursor: pointer;
 }
 
-.stepper .stepper__button:hover {
-  color: var(--text-color);
+.stepper .stepper__button:first-child {
+  border-radius: 5px 0 0 5px;
+}
+
+.stepper .stepper__button:last-child {
+  border-radius: 0 5px 5px 0;
+  /* overlap so the pair shares one divider instead of a double border */
+  margin-left: -1px;
+}
+
+/* A finger, not a cursor. 44px is what Apple's guidelines ask for and clears
+   WCAG 2.2's 24px floor comfortably. The buttons only grow where something
+   blunt is doing the pointing, so a mouse-driven layout stays compact. Asking
+   about the pointer rather than the viewport width is the right question: a
+   touchscreen laptop is wide and still has fingers. */
+@media (pointer: coarse) {
+  .stepper .stepper__button {
+    width: 44px;
+    height: 44px;
+    font-size: 18px;
+  }
 }
