@@ -53,18 +53,17 @@
 }
 
 .function-panel__group {
-  /* fixed width, no growing to fill spare space - the two groups sit
-   * tightly side by side (left-aligned) whenever the panel is wide enough
-   * for both, and stack (each still at this width) when it isn't.
-   * label 92 + field 90 + symbolic 80 + two 8px gaps = 278 */
-  flex: 0 1 278px;
-}
-
-/* the trig rows are written as equations, so their width follows how the call
- * reads rather than a column of fixed boxes - let it size to its content. The
- * column is wide enough for every sane setting; scroll rather than bleed out
- * of the panel at 8 decimal places, where the rows get genuinely long. */
-.function-panel__group--trig {
+  /* Each group is as wide as its rows, with no growing to fill spare space, so
+   * the two sit tightly side by side whenever the panel is wide enough for
+   * both and stack when it isn't.
+   *
+   * And never wider than the panel. The rows are built from fixed widths, so
+   * past a point they can't get any narrower - the angle rows at about 330px,
+   * the trig rows sooner at many decimal places. Left to overflow, that width
+   * reached all the way up to the page, which on a phone meant the browser
+   * shrank the entire app to fit it. Scrolling the group sideways keeps the
+   * spill inside it, and the first thing to go is the exact value on the far
+   * right, which is the thing that can best spare it. */
   flex: 0 1 auto;
   max-width: 100%;
   overflow-x: auto;
