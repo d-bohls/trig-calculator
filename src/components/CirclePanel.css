@@ -112,4 +112,9 @@
   .circle-panel__disc {
     stroke-width: 2;
   }
+
+  /* the point's ring, doubled to survive the halving like everything above */
+  .circle-panel__point {
+    stroke-width: 6;
+  }
 }

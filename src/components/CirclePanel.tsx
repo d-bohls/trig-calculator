@@ -332,7 +332,21 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           />
         ))}
 
-        <circle cx={px} cy={py} r={5} fill="#111827" />
+        {/* The point sits on the circle's edge, so half of it is out on the
+            panel's own background - which in the dark theme swallowed that
+            half. A ring in the disc's cream outlines it in either theme, and
+            in the light one is all but invisible. Painted beneath the fill, so
+            the ring adds to the dot rather than eating into it. */}
+        <circle
+          className="circle-panel__point"
+          cx={px}
+          cy={py}
+          r={5}
+          fill="#111827"
+          stroke="#fffcf0"
+          strokeWidth={3}
+          paintOrder="stroke"
+        />
 
         {/* One invisible hit target over the whole disc, on top of everything.
             touch-action is settled per element, and the segments and the marker
