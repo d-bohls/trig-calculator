@@ -34,9 +34,16 @@
   display: flex;
   align-items: center;
   gap: 6px;
-  /* space-between would otherwise be free to squeeze this, and the select is
-     what absorbs the shrink - silently trimming its own text to fit */
-  flex: none;
+  /* Allowed to be narrower than its contents, but only by scrolling them, the
+     same as the groups below: the select keeps its full width (see below), so
+     nothing trims its text to fit, and on a very narrow screen the row no
+     longer pushes the page wider than the screen. The gear still drops to its
+     own line first, since wrapping goes by the row's natural width. */
+  flex: 0 1 auto;
+  max-width: 100%;
+  overflow-x: auto;
+  /* or the label wraps onto two lines before the row ever scrolls */
+  white-space: nowrap;
 }
 
 .function-panel__type select {
