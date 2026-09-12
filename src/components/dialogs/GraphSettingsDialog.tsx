@@ -7,6 +7,7 @@
 import { useRef, useState } from 'react';
 import type { CalculatorApi } from '../../state/useCalculatorState';
 import { DEFAULT_SETTINGS, defaultGraphWindow } from '../../state/persistence';
+import { AngleMode } from '../../trig/trigMath';
 import Modal from '../Modal';
 import './SettingsDialog.css';
 
@@ -21,8 +22,11 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
   const [yMax, setYMax] = useState(String(api.graphWindow.yMax));
   const [error, setError] = useState<string | null>(null);
 
-  const xLabel = api.inverseMode ? 'Ratio' : 'X';
-  const yLabel = api.inverseMode ? 'Angle' : 'Y';
+  // named for what the axis measures rather than as x and y, which in arc mode
+  // would mean the opposite of what they mean everywhere else in the app
+  const angleLabel = api.angleMode === AngleMode.Degrees ? 'Degrees' : 'Radians';
+  const xLabel = api.inverseMode ? 'Ratio' : angleLabel;
+  const yLabel = api.inverseMode ? angleLabel : 'Ratio';
 
   function tryApply(next: Record<FieldKey, string>) {
     const minX = Number(next.xMin);
