@@ -60,6 +60,31 @@
   -webkit-user-select: none;
 }
 
+/* Stacked, the panel is the full width of the screen and the square plot
+   followed it, which on a tablet in portrait made it taller than the screen
+   could show at once. Capped at half the screen's height instead, but never
+   below 300px, where it would get too small to use in a phone held sideways.
+   A phone held upright is narrower than the cap, so it keeps the full width.
+
+   The small viewport height, not vh, so the plot doesn't resize as Safari's
+   toolbar slides in and out while scrolling. And centered, which leaves strips
+   either side that scroll the page - the plot itself claims every touch.
+
+   The toolbar takes the same width, so the tangent option starts at the plot's
+   left edge rather than out at the panel's, and the play button still sits
+   over the plot's center. */
+@media (max-width: 1100px) {
+  .function-graph {
+    --plot-size: min(100%, max(50svh, 300px));
+  }
+
+  .function-graph__toolbar,
+  .function-graph__canvas-wrap {
+    width: var(--plot-size);
+    align-self: center;
+  }
+}
+
 .function-graph__readout {
   font-size: 13px;
   font-weight: 600;
