@@ -127,13 +127,20 @@ function reducer(state: State, action: Action): State {
       // angle axis - x for the standard functions, y for the arc ones. Rescale
       // every kind, not just the one on screen, so the others are still right
       // when you come back to them.
-      const factor = action.mode === AngleMode.Degrees ? DEGREES_PER_RADIAN : 1 / DEGREES_PER_RADIAN;
+      //
+      // Rounded on the way back to degrees only. A bound like -105 can't survive
+      // the trip through radians exactly, and would come home as
+      // -105.00000000000001. The radian value is left alone because it is never
+      // a round number anyway, and rounding it would throw away the precision
+      // the trip back depends on.
+      const convert =
+        action.mode === AngleMode.Degrees ? degreesFromRadians : (degrees: number) => degrees / DEGREES_PER_RADIAN;
       const graphWindows = {} as Record<GraphKind, GraphWindow>;
       for (const [kind, w] of Object.entries(state.graphWindows) as [GraphKind, GraphWindow][]) {
         graphWindows[kind] =
           kind === 'standard'
-            ? { ...w, xMin: w.xMin * factor, xMax: w.xMax * factor }
-            : { ...w, yMin: w.yMin * factor, yMax: w.yMax * factor };
+            ? { ...w, xMin: convert(w.xMin), xMax: convert(w.xMax) }
+            : { ...w, yMin: convert(w.yMin), yMax: convert(w.yMax) };
       }
       return { ...state, angleMode: action.mode, graphWindows };
     }
