@@ -41,6 +41,14 @@ const BAR_SPACING = 12;
 const BAR_NUMERATOR_Y = CENTER_Y + CIRCLE_R + BAR_GAP;
 const BAR_DENOMINATOR_Y = BAR_NUMERATOR_Y + BAR_SPACING;
 const BAR_TICK = 6;
+
+// How far past the drawn circle a touch still counts as aiming at the angle.
+// A fingertip lands wide of the edge often enough that the strict circle felt
+// unresponsive there. In screen pixels rather than the drawing's own units,
+// through a stroke that doesn't scale with the rest: on a phone the drawing is
+// half size, and a ring measured in its units would shrink with it, which is
+// the opposite of what a finger needs.
+const HIT_RING_PX = 36;
 const HEIGHT = BAR_DENOMINATOR_Y + BAR_TICK + MARGIN;
 
 type Part = 'x' | 'y' | 'r';
@@ -110,6 +118,7 @@ function shortestPathUpdate(currentRadians: number, pointerRadians: number): num
 
 export default function CirclePanel({ api }: { api: CalculatorApi }) {
   const svgRef = useRef<SVGSVGElement>(null);
+  const hitRef = useRef<SVGCircleElement>(null);
   const dragging = useRef(false);
   const {
     radians,
@@ -159,21 +168,12 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     return angle;
   }
 
-  /** Is the pointer within the drawn circle? A drag has to start inside it.
-   *  Outside is the side labels and empty margin, and on a phone a touch there
-   *  is far more likely to be someone scrolling the page than aiming at the
-   *  angle - which used to jump instead of the page moving. */
-  function isInsideCircle(clientX: number, clientY: number): boolean {
-    const svg = svgRef.current;
-    if (!svg) return false;
-    const rect = svg.getBoundingClientRect();
-    const localX = ((clientX - rect.left) / rect.width) * WIDTH;
-    const localY = ((clientY - rect.top) / rect.height) * HEIGHT;
-    return Math.hypot(localX - CENTER_X, localY - CENTER_Y) <= CIRCLE_R;
-  }
-
   function handlePointerDown(e: React.PointerEvent<SVGSVGElement>) {
-    if (!isInsideCircle(e.clientX, e.clientY)) return;
+    // The hit target answers for itself: a drag has to start on it, which is
+    // the disc plus its ring. Everywhere else in the panel - the side labels,
+    // the margins, the lengths below - scrolls the page instead, which on a
+    // phone is what a touch there almost always means.
+    if (e.target !== hitRef.current) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragging.current = true;
     api.setDegreesSnapped(shortestPathUpdate(radians, angleFromPointer(e.clientX, e.clientY)));
@@ -348,20 +348,6 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           paintOrder="stroke"
         />
 
-        {/* One invisible hit target over the whole disc, on top of everything.
-            touch-action is settled per element, and the segments and the marker
-            beneath this each answered for themselves - so a touch that landed
-            on a line panned the page while the drag was also turning the angle.
-            With this on top, every touch inside the circle hits one element,
-            which says no. */}
-        <circle
-          className="circle-panel__disc"
-          cx={CENTER_X}
-          cy={CENTER_Y}
-          r={CIRCLE_R}
-          fill="transparent"
-        />
-
         <line
           x1={CENTER_X}
           y1={BAR_NUMERATOR_Y - BAR_TICK}
@@ -387,6 +373,37 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           y2={BAR_DENOMINATOR_Y}
           stroke={colors[denominator]}
           strokeWidth={3}
+        />
+
+        {/* One invisible hit target over the whole disc, on top of everything.
+            touch-action is settled per element, and the segments and the marker
+            beneath this each answered for themselves - so a touch that landed
+            on a line panned the page while the drag was also turning the angle.
+            With this on top, every touch inside the circle hits one element,
+            which says no. Last in the drawing, so it covers the lengths below
+            the circle too: they reach into the ring, and a press that starts on
+            one is still a press near the circle's bottom edge.
+
+            It reaches past the circle by a transparent stroke, half of which
+            lies outside the edge - hence the doubled width. pointer-events
+            counts that stroke despite it painting nothing. Clipped to the
+            drawing so the ring can't cover the panel's header, which sits
+            directly above the circle's top edge. */}
+        <clipPath id="circle-hit-clip">
+          <rect x={0} y={0} width={WIDTH} height={HEIGHT} />
+        </clipPath>
+        <circle
+          ref={hitRef}
+          className="circle-panel__hit"
+          clipPath="url(#circle-hit-clip)"
+          cx={CENTER_X}
+          cy={CENTER_Y}
+          r={CIRCLE_R}
+          fill="transparent"
+          stroke="transparent"
+          strokeWidth={HIT_RING_PX * 2}
+          vectorEffect="non-scaling-stroke"
+          pointerEvents="all"
         />
       </svg>
 

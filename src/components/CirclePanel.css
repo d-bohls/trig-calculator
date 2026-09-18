@@ -17,17 +17,33 @@
      the side labels are easy to land on, and a touch there was moving the
      angle instead of the page. */
   touch-action: pan-y;
-  cursor: crosshair;
   background: var(--panel-bg);
   border-radius: 8px;
   user-select: none;
   -webkit-user-select: none;
 }
 
-/* the disc itself claims the gesture, so dragging the angle still works - only
-   this element opts out of the page's scrolling */
-.circle-panel__disc {
+/* the disc and its ring claim the gesture, so dragging the angle still works -
+   only these elements opt out of the page's scrolling */
+.circle-panel__disc,
+.circle-panel__hit {
   touch-action: none;
+}
+
+/* on the hit target rather than the whole drawing, so the crosshair promises
+   exactly as much as the circle answers to */
+.circle-panel__hit {
+  cursor: crosshair;
+}
+
+/* The labels are read, never touched. Left interactive they answered for
+   themselves, and where they reach past the hit target that made a strip of
+   the margin behave unlike the margin around it: the touch scrolled, and a
+   drag that wandered onto one died there. Now a touch passes through to
+   whatever is underneath - the hit target inside its reach, the drawing's own
+   background outside it. */
+.circle-panel__axis-label {
+  pointer-events: none;
 }
 
 .circle-panel__readout {
