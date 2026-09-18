@@ -92,10 +92,17 @@
     color: var(--muted-text);
     text-align: left;
     cursor: pointer;
+    /* the flash iOS paints over anything tappable. It reads as feedback on a
+       control that looks like a button; on a line of text that only has a
+       chevron beside it, it reads as the label changing color. */
+    -webkit-tap-highlight-color: transparent;
   }
 
-  .app__panel .app__panel-toggle:hover {
-    color: var(--text-color);
+  /* see index.css: hover states are for pointers that can hover */
+  @media (hover: hover) {
+    .app__panel .app__panel-toggle:hover {
+      color: var(--text-color);
+    }
   }
 
   .app__panel-chevron {

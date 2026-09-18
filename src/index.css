@@ -45,8 +45,13 @@ button:not(.menu-bar__item, .menu-bar__label, .icon-button) {
   cursor: pointer;
 }
 
-button:hover:not(:disabled, .icon-button) {
-  background: var(--hover-bg);
+/* Every hover rule is behind this, because a touch screen has no hover to
+   leave: iOS applies the state on tap and leaves it applied until something
+   else is tapped, so a tapped control sat there looking highlighted. */
+@media (hover: hover) {
+  button:hover:not(:disabled, .icon-button) {
+    background: var(--hover-bg);
+  }
 }
 
 /* shared reset for icon-only buttons (gear icons, etc.) - any component that
@@ -66,9 +71,11 @@ button:hover:not(:disabled, .icon-button) {
   cursor: pointer;
 }
 
-.icon-button:hover {
-  color: var(--text-color);
-  background: var(--hover-bg);
+@media (hover: hover) {
+  .icon-button:hover {
+    color: var(--text-color);
+    background: var(--hover-bg);
+  }
 }
 
 button:disabled {
