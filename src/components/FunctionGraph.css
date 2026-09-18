@@ -84,6 +84,16 @@
   }
 }
 
+/* A tablet gets a shorter plot again. Only a tablet: a phone is held upright
+   in a hand and the width rule is what limits it there, so lowering this any
+   further for both would start shrinking the phone instead, which already has
+   the smaller plot of the two. */
+@media (min-width: 701px) and (max-width: 1100px) {
+  .function-graph {
+    --plot-size: min(80%, max(30svh, 260px));
+  }
+}
+
 .function-graph__readout {
   font-size: 13px;
   font-weight: 600;
