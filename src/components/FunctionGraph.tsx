@@ -182,14 +182,6 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   return (
     <div className="function-graph">
       <div className="function-graph__toolbar">
-        <label className="function-graph__tangent">
-          <input
-            type="checkbox"
-            checked={showTangent}
-            onChange={(e) => api.setShowTangent(e.target.checked)}
-          />
-          Show tangent line
-        </label>
         <button
           type="button"
           className="icon-button function-graph__play"
@@ -199,6 +191,14 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
         >
           <PlayIcon />
         </button>
+        <label className="function-graph__tangent">
+          <input
+            type="checkbox"
+            checked={showTangent}
+            onChange={(e) => api.setShowTangent(e.target.checked)}
+          />
+          Show tangent line
+        </label>
       </div>
       <div ref={containerRef} className="function-graph__canvas-wrap">
         <canvas

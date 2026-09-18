@@ -8,22 +8,17 @@
 }
 
 /* the tangent toggle describes what the plot is showing rather than being a
-   buried preference, so it rides the toolbar with the buttons.
+   buried preference, so it rides the toolbar with the button.
 
-   Three columns rather than a flex row: the outer two take equal shares of the
-   free space, which puts the play button in the middle column at the true
-   center of the panel, not merely between its neighbors. minmax(0, 1fr) so a
-   long label shrinks its own column instead of shoving the center off. */
+   One to each end, and the toolbar is the width of the plot below it (see the
+   stacked rules further down), so they line up with its two edges rather than
+   floating over the middle of it. */
 .function-graph__toolbar {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr);
+  display: flex;
   align-items: center;
+  justify-content: space-between;
   gap: 12px;
   min-height: 28px;
-}
-
-.function-graph__settings {
-  justify-self: end;
 }
 
 .function-graph__tangent {
@@ -68,14 +63,19 @@
 
    The small viewport height, not vh, so the plot doesn't resize as Safari's
    toolbar slides in and out while scrolling. And centered, which leaves strips
-   either side that scroll the page - the plot itself claims every touch.
+   either side that scroll the page - the plot itself claims every touch, so
+   without them a phone has nowhere to start a scroll from.
 
-   The toolbar takes the same width, so the tangent option starts at the plot's
-   left edge rather than out at the panel's, and the play button still sits
-   over the plot's center. */
+   Four tenths of the height rather than a half, so a tablet in portrait shows
+   the circle and the graph at once, and never more than four fifths of the
+   width, which is what leaves those strips on a phone. The floor keeps it
+   usable on a phone held sideways, where two fifths of the height is nothing.
+
+   The toolbar takes the same width, so the button and the tangent option line
+   up with the plot's two edges. */
 @media (max-width: 1100px) {
   .function-graph {
-    --plot-size: min(100%, max(50svh, 300px));
+    --plot-size: min(80%, max(40svh, 260px));
   }
 
   .function-graph__toolbar,
