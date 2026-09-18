@@ -66,8 +66,8 @@
    either side that scroll the page - the plot itself claims every touch, so
    without them a phone has nowhere to start a scroll from.
 
-   Four tenths of the height rather than a half, so a tablet in portrait shows
-   the circle and the graph at once, and never more than four fifths of the
+   A third of the height, so a tablet in portrait shows the circle and the
+   graph at once with room to spare, and never more than four fifths of the
    width, which is what leaves those strips on a phone. The floor keeps it
    usable on a phone held sideways, where two fifths of the height is nothing.
 
@@ -75,7 +75,7 @@
    up with the plot's two edges. */
 @media (max-width: 1100px) {
   .function-graph {
-    --plot-size: min(80%, max(40svh, 260px));
+    --plot-size: min(80%, max(34svh, 260px));
   }
 
   .function-graph__toolbar,

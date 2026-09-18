@@ -189,11 +189,10 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
     const pointVisible = xval >= xMin && xval <= xMax && yval >= yMin && yval <= yMax && !selectedRatio.isUndefined;
     if (pointVisible) {
       const [sx, sy] = toScreenHere(xval, yval, w, h);
-      ctx.fillStyle = '#111827';
-      ctx.beginPath();
-      ctx.arc(sx, sy, 5, 0, 2 * Math.PI);
-      ctx.fill();
 
+      // the tangent first, so the point sits on top of it: the line passes
+      // straight through the point it is drawn for, and on top it cut the
+      // marker in half
       if (showTangent) {
         const slope = slopeAt(functionMode, inverseMode, angleMode, xval);
         ctx.strokeStyle = '#059669';
@@ -225,6 +224,11 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
           ctx.textAlign = 'left';
         }
       }
+
+      ctx.fillStyle = '#111827';
+      ctx.beginPath();
+      ctx.arc(sx, sy, 5, 0, 2 * Math.PI);
+      ctx.fill();
     }
 
     // corner labels
