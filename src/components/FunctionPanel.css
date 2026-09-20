@@ -257,12 +257,12 @@
   white-space: nowrap;
 }
 
-/* The angle rows never show a ratio, only a radian fraction like 23π/12, so
-   they reserve what one of those needs rather than what the trig rows do. The
-   80px there was the difference between the angle group fitting a small phone
-   and scrolling sideways on it. */
+/* The angle rows never show a ratio, only a radian fraction, so they reserve
+   what the longest of those needs - -23π/12, with the minus sign - rather than
+   what the trig rows do. The 80px there was the difference between the angle
+   group fitting a small phone and scrolling sideways on it. */
 .function-panel__column .function-panel__symbolic {
-  width: 44px;
+  width: 52px;
 }
 
 .function-panel__period {
