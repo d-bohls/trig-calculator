@@ -202,6 +202,14 @@
   white-space: nowrap;
 }
 
+/* The angle rows never show a ratio, only a radian fraction like 23π/12, so
+   they reserve what one of those needs rather than what the trig rows do. The
+   80px there was the difference between the angle group fitting a small phone
+   and scrolling sideways on it. */
+.function-panel__column .function-panel__symbolic {
+  width: 44px;
+}
+
 .function-panel__period {
   margin-top: 8px;
   justify-content: flex-start;
@@ -245,6 +253,16 @@
   border-radius: 0 5px 5px 0;
   /* overlap so the pair shares a single divider instead of a double border */
   margin-left: -1px;
+}
+
+/* A shorter number field on a phone, where the panel has 325px to work with
+   and the rows were laid out wider than that. It still holds the four decimal
+   places the calculator ships with; beyond that the digits scroll within the
+   box, which is what the right-aligned text already does. */
+@media (max-width: 700px) {
+  .function-panel {
+    --field-width: 70px;
+  }
 }
 
 /* same size a finger needs as the steppers above - see Stepper.css */
