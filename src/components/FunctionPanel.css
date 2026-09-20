@@ -56,7 +56,21 @@
 .function-panel__columns {
   display: flex;
   flex-wrap: wrap;
+  /* each column as tall as its own content, so the trig rows sit at the top of
+     the panel beside the function type rather than being stretched down the
+     height of the column next to them */
+  align-items: flex-start;
   gap: 20px;
+}
+
+/* the function type and the angle, stacked - the panel's left column when
+   there is room for two, and simply the first two things in it when there
+   isn't, which is where the wrap above puts them */
+.function-panel__column {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  min-width: 0;
 }
 
 .function-panel__group {

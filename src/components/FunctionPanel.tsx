@@ -155,72 +155,81 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
 
   return (
     <div className="function-panel">
-      <div className="function-panel__header">
-        {/* this one decides how every row below reads, so it belongs on the
-            panel rather than buried in the settings dialog */}
-        <label className="function-panel__type">
-          Function Type:
-          <select value={inverseMode ? 'arc' : 'standard'} onChange={(e) => api.setInverseMode(e.target.value === 'arc')}>
-            <option value="standard">Standard</option>
-            <option value="arc">Inverse/Arc</option>
-          </select>
-        </label>
-      </div>
-
       <div className="function-panel__columns">
-        <div className="function-panel__group">
-          <h4>Angle</h4>
-          <div className="function-panel__row">
-            <label>
-              <input
-                type="radio"
-                checked={angleMode === AngleMode.Degrees}
-                onChange={() => api.setAngleMode(AngleMode.Degrees)}
-              />
-              Degrees
+        {/* the function type and the angle share a column: the type decides
+            how the angle reads, and together they are what the trig rows
+            beside them answer to. The trig column then starts level with the
+            type rather than below it, where it left a hole in the corner. */}
+        <div className="function-panel__column">
+          <div className="function-panel__header">
+            {/* this one decides how every row below reads, so it belongs on the
+                panel rather than buried in the settings dialog */}
+            <label className="function-panel__type">
+              Function Type:
+              <select
+                value={inverseMode ? 'arc' : 'standard'}
+                onChange={(e) => api.setInverseMode(e.target.value === 'arc')}
+              >
+                <option value="standard">Standard</option>
+                <option value="arc">Inverse/Arc</option>
+              </select>
             </label>
-            <Field stepper={<Stepper onUp={() => api.nudgeAngle(1)} onDown={() => api.nudgeAngle(-1)} />}>
-              <NumberField
-                ariaLabel="Angle in degrees"
-                value={degrees}
-                places={anglePlaces}
-                highlighted={angleMode === AngleMode.Degrees}
-                onCommit={(_raw, parsed) => parsed !== null && api.setDegrees(parsed)}
-              />
-            </Field>
-            <Symbolic />
           </div>
-          <div className="function-panel__row">
-            <label>
-              <input
-                type="radio"
-                checked={angleMode === AngleMode.Radians}
-                onChange={() => api.setAngleMode(AngleMode.Radians)}
-              />
-              Radians
-            </label>
-            <Field stepper={<Stepper onUp={() => api.nudgeAngle(1)} onDown={() => api.nudgeAngle(-1)} />}>
-              <NumberField
-                ariaLabel="Angle in radians"
-                value={radians}
-                places={anglePlaces}
-                highlighted={angleMode === AngleMode.Radians}
-                onCommit={(_raw, parsed) => parsed !== null && api.setRadians(parsed)}
-              />
-            </Field>
-            <Symbolic value={symbolicRadians(degrees) ?? undefined} />
-          </div>
-          <div className="function-panel__row function-panel__period">
-            <span>
-              Add/subtract 1 period <span className="function-panel__period-amount">({periodLabel})</span>
-            </span>
-            <div className="function-panel__period-buttons">
-              <button type="button" onClick={() => api.addPeriod(-1)} aria-label={`Subtract ${periodLabel}`}>
-                &minus;
-              </button>
-              <button type="button" onClick={() => api.addPeriod(1)} aria-label={`Add ${periodLabel}`}>
-                +
-              </button>
+
+          <div className="function-panel__group">
+            <h4>Angle</h4>
+            <div className="function-panel__row">
+              <label>
+                <input
+                  type="radio"
+                  checked={angleMode === AngleMode.Degrees}
+                  onChange={() => api.setAngleMode(AngleMode.Degrees)}
+                />
+                Degrees
+              </label>
+              <Field stepper={<Stepper onUp={() => api.nudgeAngle(1)} onDown={() => api.nudgeAngle(-1)} />}>
+                <NumberField
+                  ariaLabel="Angle in degrees"
+                  value={degrees}
+                  places={anglePlaces}
+                  highlighted={angleMode === AngleMode.Degrees}
+                  onCommit={(_raw, parsed) => parsed !== null && api.setDegrees(parsed)}
+                />
+              </Field>
+              <Symbolic />
+            </div>
+            <div className="function-panel__row">
+              <label>
+                <input
+                  type="radio"
+                  checked={angleMode === AngleMode.Radians}
+                  onChange={() => api.setAngleMode(AngleMode.Radians)}
+                />
+                Radians
+              </label>
+              <Field stepper={<Stepper onUp={() => api.nudgeAngle(1)} onDown={() => api.nudgeAngle(-1)} />}>
+                <NumberField
+                  ariaLabel="Angle in radians"
+                  value={radians}
+                  places={anglePlaces}
+                  highlighted={angleMode === AngleMode.Radians}
+                  onCommit={(_raw, parsed) => parsed !== null && api.setRadians(parsed)}
+                />
+              </Field>
+              <Symbolic value={symbolicRadians(degrees) ?? undefined} />
+            </div>
+            <div className="function-panel__row function-panel__period">
+              <span>
+                Add/subtract 1 period <span className="function-panel__period-amount">({periodLabel})</span>
+              </span>
+              <div className="function-panel__period-buttons">
+                <button type="button" onClick={() => api.addPeriod(-1)} aria-label={`Subtract ${periodLabel}`}>
+                  &minus;
+                </button>
+                <button type="button" onClick={() => api.addPeriod(1)} aria-label={`Add ${periodLabel}`}>
+                  +
+                </button>
+              </div>
             </div>
           </div>
         </div>
