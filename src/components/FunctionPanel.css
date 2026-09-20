@@ -164,6 +164,43 @@
   letter-spacing: -0.2px;
 }
 
+/* One grid for all six rows rather than six independent ones, so a column is
+   the width of the widest thing in it and nothing else: the results end where
+   the longest of them ends, and each note begins right after. Fixed reserves
+   can't do that - they are a guess at the longest reading, and whatever they
+   guess too generously shows up as a gap. The rows themselves become
+   display: contents so their cells land in this grid. */
+.function-panel__rows {
+  display: grid;
+  align-items: center;
+  row-gap: 4px;
+  width: max-content;
+}
+
+.function-panel__rows--standard {
+  grid-template-columns: max-content max-content max-content;
+  column-gap: var(--row-gap);
+}
+
+/* the parentheses belong to the field they wrap, so they sit against it */
+.function-panel__rows--arc {
+  grid-template-columns: max-content max-content max-content max-content;
+  column-gap: 2px;
+}
+
+.function-panel__rows .function-panel__row {
+  display: contents;
+}
+
+/* in the grid the column does the reserving, so the cells stop doing it
+   themselves - otherwise the guess is back, just one level down */
+.function-panel__rows .function-panel__symbolic,
+.function-panel__rows .function-panel__arc-result,
+.function-panel__rows .function-panel__note {
+  width: auto;
+  min-width: 0;
+}
+
 /* min-widths hold the row steady as the angle's digit count changes, rather
  * than letting the whole group breathe in and out while you type */
 .function-panel__row--trig .function-panel__call {

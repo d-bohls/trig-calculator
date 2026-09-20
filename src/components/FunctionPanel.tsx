@@ -236,7 +236,11 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
 
         <div className="function-panel__group function-panel__group--trig">
           <h4>Trig Functions</h4>
-          {FUNCTIONS.map(renderTrigRow)}
+          {/* the six rows share one grid, so each column is as wide as the
+              widest thing in it and no wider - see FunctionPanel.css */}
+          <div className={`function-panel__rows function-panel__rows--${inverseMode ? 'arc' : 'standard'}`}>
+            {FUNCTIONS.map(renderTrigRow)}
+          </div>
         </div>
       </div>
     </div>
