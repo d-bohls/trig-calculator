@@ -112,6 +112,12 @@
     font-size: 24px;
   }
 
+  /* same treatment as the axis labels above: sized in viewBox units, so it
+     needs doubling to come out the size it is on a desktop */
+  .circle-panel__theta {
+    font-size: 26px;
+  }
+
   /* Everything else in here is scaled down with the drawing, which would leave
      the triangle at well under a pixel. These are viewBox units, so roughly
      two and a half times the desktop width lands about where the desktop one
