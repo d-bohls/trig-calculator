@@ -90,6 +90,16 @@
   overflow-x: auto;
 }
 
+/* The trig group asks for a width of its own rather than its content's, so
+   what decides whether it sits beside the angle is the panel's width alone.
+   Its rows grow with the settings - eight decimal places, or a note saying an
+   angle is outside a range - and sized by content it would jump out from
+   beside the angle and below it as they did. It scrolls within this instead,
+   and still drops below on a phone, where even this doesn't fit. */
+.function-panel__group--trig {
+  flex: 1 1 320px;
+}
+
 .function-panel__group h4 {
   margin: 0 0 6px;
   font-size: 12px;
@@ -193,12 +203,20 @@
 
 /* why a row can't return the selected angle, e.g. "-60° ∉ [0°, 180°]". Only
  * ever appears on rows other than the selected one, whose range always holds
- * the angle. */
+ * the angle.
+ *
+ * The reserve is narrower than the longest of those - a note that long has
+ * always run into the group's own sideways scroll - because it is what decides
+ * whether the angle and the trig rows fit side by side on a small tablet. The
+ * touch-sized steppers make the angle column wider there, and this is the
+ * width that pays for them. */
 .function-panel__note {
   flex: none;
-  min-width: 104px;
+  min-width: 68px;
   font-size: 11px;
   color: var(--muted-text);
+  /* one line, always: a note that ran onto a second one turned the reading
+     into a puzzle. A long one takes the group's own sideways scroll instead */
   white-space: nowrap;
 }
 
