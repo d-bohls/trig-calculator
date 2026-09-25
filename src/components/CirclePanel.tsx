@@ -55,13 +55,6 @@ const BAR_TICK = 6;
 // the opposite of what a finger needs.
 const HIT_RING_PX = 36;
 
-// room to leave between the theta and each of the two lines that meet at the
-// angle it names - about half the letter's height, plus a little air
-const THETA_CLEARANCE = 11;
-// Under this the wedge is narrower than the letter is tall the whole way to
-// the rim, so there is nowhere inside it the label can sit and be read. The
-// arc still shows; it just goes unnamed.
-const THETA_MIN_SWEEP = (12 * PI) / 180;
 const HEIGHT = BAR_DENOMINATOR_Y + BAR_TICK + MARGIN;
 
 type Part = 'x' | 'y' | 'r';
@@ -177,27 +170,6 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   // turn is an arc all the way round, which is worth drawing - it is what
   // tells -715 degrees apart from -5.
   const showArc = Math.abs(swept) > 0.1;
-  // Named on the line that halves the angle, so it reads as belonging to the
-  // arc from either side of it. How far out depends on how thin the wedge is:
-  // the label sits THETA_CLEARANCE from the axis and from the radius, which
-  // for a narrow angle means walking out towards the rim, where the two lines
-  // have drawn apart far enough to fit it between them. Sitting at a fixed
-  // distance it was crushed between them at anything under about 25 degrees.
-  // Half the sweep is the angle from the bisector to each line, and the sine
-  // of it turns a distance from the center into a distance from those lines -
-  // but only while that half is a quarter turn or less. Past it the lines fall
-  // behind the label and the center itself is the nearest point of them, so
-  // the label is clear wherever it sits. Without the clamp the sine came back
-  // down again as the sweep approached a full turn, and a 345 degree angle -
-  // as wide open as a wedge gets - sent the theta out to the rim.
-  const halfSweep = Math.min(Math.abs(swept) / 2, PI / 2);
-  const thetaR = Math.min(
-    CIRCLE_R * 0.78,
-    Math.max(ARC_R + 16, THETA_CLEARANCE / Math.sin(halfSweep)),
-  );
-  const thetaX = CENTER_X + thetaR * Math.cos(swept / 2);
-  const thetaY = CENTER_Y - thetaR * Math.sin(swept / 2);
-  const showTheta = showArc && Math.abs(swept) >= THETA_MIN_SWEEP;
 
   // The four quarter turns, in the unit the panel is showing: a circle
   // labelled in radians while every number under it reads in degrees makes the
@@ -407,28 +379,12 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
         </text>
 
         {showArc && (
-          <>
-            <path
-              d={`M ${arcStartX} ${arcStartY} A ${ARC_R} ${ARC_R} 0 ${arcLarge} ${arcSweep} ${arcEndX} ${arcEndY}`}
-              fill="none"
-              stroke="#111827"
-              strokeWidth={1.5}
-            />
-            {showTheta && (
-              <text
-                className="circle-panel__theta"
-                x={thetaX}
-                y={thetaY}
-                fontSize="13"
-                fontStyle="italic"
-                textAnchor="middle"
-                dominantBaseline="middle"
-                fill="#111827"
-              >
-                θ
-              </text>
-            )}
-          </>
+          <path
+            d={`M ${arcStartX} ${arcStartY} A ${ARC_R} ${ARC_R} 0 ${arcLarge} ${arcSweep} ${arcEndX} ${arcEndY}`}
+            fill="none"
+            stroke="#111827"
+            strokeWidth={1.5}
+          />
         )}
 
         {segmentOrder.map((part) => (
