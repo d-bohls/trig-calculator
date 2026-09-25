@@ -194,6 +194,14 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   const thetaY = CENTER_Y - thetaR * Math.sin(swept / 2);
   const showTheta = showArc && Math.abs(swept) >= THETA_MIN_SWEEP;
 
+  // The four quarter turns, in the unit the panel is showing: a circle
+  // labelled in radians while every number under it reads in degrees makes the
+  // reader do the conversion to place themselves.
+  const isRadians = angleMode === AngleMode.Radians;
+  const QUARTER_IN_RADIANS: Record<number, string> = { 0: '0', 90: 'π/2', 180: 'π', 270: '3π/2' };
+  const quarterLabel = (degrees: number) =>
+    isRadians ? QUARTER_IN_RADIANS[degrees] : `${degrees}°`;
+
   const colors = COLORS[functionMode];
   // the SVG lines are drawn on the circle's own light background, where a
   // literal near-black reads fine - but the readout below sits on the app's
@@ -213,6 +221,15 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     return angle;
   }
 
+  /** Whole degrees, or the settings' own step while shift is held - the same
+   *  bargain the graph offers, and this is where it is most wanted: 30 and 45
+   *  are hard to hit with a finger on a circle this size. */
+  function turnTo(e: React.PointerEvent<SVGSVGElement>) {
+    const degrees = shortestPathUpdate(radians, angleFromPointer(e.clientX, e.clientY));
+    const step = api.angleStepDegrees;
+    api.setDegreesSnapped(e.shiftKey ? Math.round(degrees / step) * step : degrees);
+  }
+
   function handlePointerDown(e: React.PointerEvent<SVGSVGElement>) {
     // The hit target answers for itself: a drag has to start on it, which is
     // the disc plus its ring. Everywhere else in the panel - the side labels,
@@ -221,12 +238,12 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     if (e.target !== hitRef.current) return;
     e.currentTarget.setPointerCapture(e.pointerId);
     dragging.current = true;
-    api.setDegreesSnapped(shortestPathUpdate(radians, angleFromPointer(e.clientX, e.clientY)));
+    turnTo(e);
   }
 
   function handlePointerMove(e: React.PointerEvent<SVGSVGElement>) {
     if (!dragging.current) return;
-    api.setDegreesSnapped(shortestPathUpdate(radians, angleFromPointer(e.clientX, e.clientY)));
+    turnTo(e);
   }
 
   function handlePointerUp(e: React.PointerEvent<SVGSVGElement>) {
@@ -331,31 +348,50 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           strokeWidth={1}
         />
 
-        {/* These sit outside the disc, on the panel's own background, so they
-            take the theme's text color rather than the near-black that
-            everything inside the disc uses - that reads against the cream fill
-            in either theme, but would vanish out here in the dark one.
-
-            The unit is spelled out where there's room for it; on a phone the
-            circle is half this size and the arrows alone carry the meaning. */}
+        {/* All four quarter turns, inside the disc where the near-black reads
+            on the cream in either theme. Outside it they had to take the
+            theme's text color, and the two at the sides had to be reached
+            around - and the word Radians with them, which the numbers in the
+            equation below already settle. Each sits just clear of the axis it
+            marks, so it names the end of the axis without lying on it - and
+            the two on the horizontal go below it, where a first-quadrant
+            angle, which is most of them, doesn't draw its triangle. */}
         <text
           className="circle-panel__axis-label"
-          x={CENTER_X + CIRCLE_R + 8}
-          y={CENTER_Y + 4}
+          x={CENTER_X + CIRCLE_R - 6}
+          y={CENTER_Y + 14}
           fontSize="11"
-          fill="var(--text-color)"
+          fill="#111827"
+          textAnchor="end"
         >
-          &lt; 0<tspan className="circle-panel__unit"> Radians</tspan>
+          {quarterLabel(0)}
         </text>
         <text
           className="circle-panel__axis-label"
-          x={CENTER_X - CIRCLE_R - 8}
-          y={CENTER_Y + 4}
+          x={CENTER_X - CIRCLE_R + 6}
+          y={CENTER_Y + 14}
           fontSize="11"
-          fill="var(--text-color)"
-          textAnchor="end"
+          fill="#111827"
         >
-          π<tspan className="circle-panel__unit"> Radians</tspan> &gt;
+          {quarterLabel(180)}
+        </text>
+        <text
+          className="circle-panel__axis-label"
+          x={CENTER_X + 6}
+          y={CENTER_Y - CIRCLE_R + 14}
+          fontSize="11"
+          fill="#111827"
+        >
+          {quarterLabel(90)}
+        </text>
+        <text
+          className="circle-panel__axis-label"
+          x={CENTER_X + 6}
+          y={CENTER_Y + CIRCLE_R - 6}
+          fontSize="11"
+          fill="#111827"
+        >
+          {quarterLabel(270)}
         </text>
 
         {showArc && (
@@ -435,6 +471,29 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
           stroke={colors[denominator]}
           strokeWidth={3}
         />
+
+        {/* Which length each bar is, in the color it is drawn in - the colors
+            alone said it only to someone who can tell the red from the blue,
+            and only by looking back up at the fraction. At the far end of each
+            bar, on the side it grew towards, so the letter travels with the
+            length it names rather than sitting apart from it. */}
+        {([numerator, denominator] as Part[]).map((part, index) => {
+          const end = CENTER_X + partValue[part] * CIRCLE_R;
+          const outward = partValue[part] < 0 ? -1 : 1;
+          return (
+            <text
+              key={part}
+              className="circle-panel__axis-label"
+              x={end + outward * 7}
+              y={(index === 0 ? BAR_NUMERATOR_Y : BAR_DENOMINATOR_Y) + 4}
+              fontSize="11"
+              textAnchor={outward < 0 ? 'end' : 'start'}
+              fill={readoutColor(colors[part])}
+            >
+              {part}
+            </text>
+          );
+        })}
 
         {/* One invisible hit target over the whole disc, on top of everything.
             touch-action is settled per element, and the segments and the marker

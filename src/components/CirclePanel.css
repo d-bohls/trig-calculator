@@ -93,16 +93,10 @@
 
 /* On a phone the panel is the full width of the screen, which made the circle
    far larger than it needs to be and pushed the graph well below the fold.
-   Half the width is still plenty to read an angle off, and with it that small
-   the spelled-out unit beside it is just clutter - the arrows say which way
-   the angle runs. */
+   Half the width is still plenty to read an angle off. */
 @media (max-width: 700px) {
   .circle-panel__svg {
     width: 50%;
-  }
-
-  .circle-panel__unit {
-    display: none;
   }
 
   /* The whole drawing is scaled to half, text included, which would leave
