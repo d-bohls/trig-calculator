@@ -261,7 +261,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   const part = (p: Part, text: string) => <span style={{ color: readoutColor(colors[p]) }}>{text}</span>;
   const letterFraction = <Fraction top={part(numerator, numerator)} bottom={part(denominator, denominator)} />;
   // shown even where the ratio is undefined: 1.00 over 0.00 says why it's
-  // undefined, which a bare "Undefined" does not
+  // undefined, which the bare word does not
   const valueFraction = (
     <Fraction
       values
@@ -291,7 +291,7 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
   const ratioExact = symbolicForFunction(lookupSymbolic(degrees), functionMode);
   const worthShowing = !!ratioExact && ratioExact !== 'undefined' && !/^-?\d+$/.test(ratioExact);
   const exactNode = worthShowing ? <Exact value={ratioExact as string} /> : null;
-  const ratioNode = selectedRatio.isUndefined ? 'Undefined' : fmt(selectedRatio.value, resultPlaces);
+  const ratioNode = selectedRatio.isUndefined ? 'undefined' : fmt(selectedRatio.value, resultPlaces);
 
   return (
     <div className="circle-panel">

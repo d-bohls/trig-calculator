@@ -23,7 +23,7 @@ interface NumberFieldProps {
  *  pattern - and stepping on the arrow keys, where a hand already is after
  *  typing into it. */
 function format(value: number, places: number): string {
-  return Number.isNaN(value) ? 'Undefined' : formatNumber(value, places);
+  return Number.isNaN(value) ? 'undefined' : formatNumber(value, places);
 }
 
 export default function NumberField({

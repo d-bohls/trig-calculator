@@ -206,10 +206,10 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     const name = TRIG_FUNCTION_LABELS[functionMode];
     // An arc function's input is the ratio, and at an angle where the ratio
     // doesn't exist there is nothing to put in the brackets - no point on the
-    // curve either, which is why none is drawn. Writing Arccot(Undefined) =
+    // curve either, which is why none is drawn. Writing Arccot(undefined) =
     // 180 claimed an answer to a question that was never asked; the fact worth
     // stating is the one that went wrong, which is Cot(180) itself.
-    if (selectedRatio.isUndefined) return `${name}(${angleText}) = Undefined`;
+    if (selectedRatio.isUndefined) return `${name}(${angleText}) = undefined`;
     if (inverseMode) {
       return `${arcFunctionName(functionMode)}(${formatNumber(currentPoint.xval, resultPlaces)}) = ${angleText}`;
     }

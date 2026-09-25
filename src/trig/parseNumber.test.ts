@@ -21,7 +21,7 @@ describe('parseNumber', () => {
     expect(parseNumber('')).toBeNull();
     expect(parseNumber('   ')).toBeNull();
     expect(parseNumber('-')).toBeNull();
-    expect(parseNumber('Undefined')).toBeNull();
+    expect(parseNumber('undefined')).toBeNull();
     expect(parseNumber('Infinity')).toBeNull();
     expect(parseNumber('NaN')).toBeNull();
   });
