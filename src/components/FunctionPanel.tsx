@@ -35,8 +35,6 @@ const FUNCTIONS = [
   TrigFunction.Cosecant,
 ];
 
-/** "Sin" -> "Arcsin". All six come out six characters wide, so the rows still
- *  line up in the monospace face. */
 /** Tangent and cotangent never reach their bounds, so those get open brackets. */
 function isOpenRange(fn: TrigFunction): boolean {
   return fn === TrigFunction.Tangent || fn === TrigFunction.Cotangent;

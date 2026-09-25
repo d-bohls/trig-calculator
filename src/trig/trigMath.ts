@@ -20,7 +20,8 @@ export const AngleMode = {
 } as const;
 export type AngleMode = (typeof AngleMode)[keyof typeof AngleMode];
 
-/** "Arcsin", "Arccos", ... - what the inverse of each one is called. */
+/** "Sin" -> "Arcsin". All six come out six characters wide, so rows written
+ *  with them still line up in a monospace face. */
 export function arcFunctionName(fn: TrigFunction): string {
   return `Arc${TRIG_FUNCTION_LABELS[fn].toLowerCase()}`;
 }
