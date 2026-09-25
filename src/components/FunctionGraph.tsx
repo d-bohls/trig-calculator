@@ -14,6 +14,7 @@ import {
   clampToArcDomain,
   getRadians,
   PI,
+  slopeAt,
   TRIG_FUNCTION_NAMES,
 } from '../trig/trigMath';
 import PlayIcon from './PlayIcon';
@@ -179,6 +180,26 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     return `(${formatNumber(currentPoint.xval, xPlaces)}, ${formatNumber(currentPoint.yval, yPlaces)})`;
   }
 
+  /** What the tangent's slope comes to, or null when no tangent is drawn -
+   *  which is whenever the point itself isn't, since a line through a point
+   *  off the plot has nothing to be tangent to. */
+  function slopeText(): string | null {
+    const { xval, yval } = currentPoint;
+    const { xMin, xMax, yMin, yMax } = graphWindow;
+    const drawn =
+      showTangent &&
+      !selectedRatio.isUndefined &&
+      xval >= xMin &&
+      xval <= xMax &&
+      yval >= yMin &&
+      yval <= yMax;
+    if (!drawn) return null;
+    const slope = slopeAt(functionMode, inverseMode, angleMode, xval);
+    if (Number.isFinite(slope)) return `slope ≈ ${formatNumber(slope, resultPlaces)}`;
+    // vertical, where arcsine and friends meet the ends of their domain
+    return slope > 0 ? 'slope → ∞' : 'slope → -∞';
+  }
+
   return (
     <div className="function-graph">
       <div className="function-graph__toolbar">
@@ -225,7 +246,12 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
           }}
         />
       </div>
-      <div className="function-graph__readout">{readoutText()}</div>
+      {/* the point's two facts, each against the edge of the plot they sit
+          under, the way the toolbar's two controls sit against them above */}
+      <div className="function-graph__readout">
+        <span>{readoutText()}</span>
+        {slopeText() && <span className="function-graph__slope">{slopeText()}</span>}
+      </div>
     </div>
   );
 }

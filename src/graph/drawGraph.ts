@@ -367,13 +367,12 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
 
       // the tangent first, so the point sits on top of it: the line passes
       // straight through the point it is drawn for, and on top it cut the
-      // marker in half
+      // marker in half. What its slope comes to is written under the plot,
+      // beside the point's own coordinates - see FunctionGraph.tsx.
       if (showTangent) {
         const slope = slopeAt(functionMode, inverseMode, angleMode, xval);
         ctx.strokeStyle = '#059669';
         ctx.lineWidth = 1.5;
-        ctx.fillStyle = '#059669';
-        ctx.font = '12px monospace';
         if (Number.isFinite(slope)) {
           const y1 = yval + slope * (xMin - xval);
           const y2 = yval + slope * (xMax - xval);
@@ -383,9 +382,6 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
           ctx.moveTo(x1s, y1s);
           ctx.lineTo(x2s, y2s);
           ctx.stroke();
-          ctx.textAlign = 'right';
-          ctx.fillText(`slope ≈ ${slope.toFixed(4)}`, w - 6, 16);
-          ctx.textAlign = 'left';
         } else if (slope === Infinity || slope === -Infinity) {
           // the tangent at the end of arcsine and friends is vertical, so it
           // has no slope to write down - draw the line itself instead of
@@ -394,9 +390,6 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
           ctx.moveTo(sx, 0);
           ctx.lineTo(sx, h);
           ctx.stroke();
-          ctx.textAlign = 'right';
-          ctx.fillText(slope > 0 ? 'slope → ∞' : 'slope → -∞', w - 6, 16);
-          ctx.textAlign = 'left';
         }
       }
 

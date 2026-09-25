@@ -78,7 +78,8 @@
   }
 
   .function-graph__toolbar,
-  .function-graph__canvas-wrap {
+  .function-graph__canvas-wrap,
+  .function-graph__readout {
     width: var(--plot-size);
     align-self: center;
   }
@@ -94,8 +95,23 @@
   }
 }
 
+/* the coordinates at one end, the slope at the other, so the pair frames the
+   plot the way the toolbar above it does. Alone, the coordinates keep the left
+   edge rather than wandering to the middle. */
 .function-graph__readout {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 12px;
   font-size: 13px;
   font-weight: 600;
-  text-align: center;
+}
+
+/* the green the tangent line is drawn in, so the number and the line it
+   describes are plainly the same thing */
+.function-graph__slope {
+  color: #059669;
+  font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
+  font-size: 12px;
 }
