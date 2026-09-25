@@ -72,16 +72,26 @@
 
    The toolbar takes the same width, so the pair of controls starts at the
    plot's left edge. */
+/* The plot is square, so its height is whatever its width is, and side by side
+   its width is the column's. On a wide, short window that made the panel
+   taller than the window and put a scrollbar on the page: at 1920 by 800 the
+   column is 780px, and 780px of height is not there. Two thirds of the window
+   is, and on a tall window the column is the smaller of the two anyway, so
+   this only binds where it was overflowing. */
+.function-graph {
+  --plot-size: min(100%, 66svh);
+}
+
+.function-graph__toolbar,
+.function-graph__canvas-wrap,
+.function-graph__readout {
+  width: var(--plot-size);
+  align-self: center;
+}
+
 @media (max-width: 1100px) {
   .function-graph {
     --plot-size: min(80%, max(34svh, 260px));
-  }
-
-  .function-graph__toolbar,
-  .function-graph__canvas-wrap,
-  .function-graph__readout {
-    width: var(--plot-size);
-    align-self: center;
   }
 }
 
