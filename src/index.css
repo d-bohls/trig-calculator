@@ -6,6 +6,16 @@
   --border-color: #d1d5db;
   --hover-bg: #e5e7eb;
 
+  /* The plot draws itself on a canvas, which knows nothing about any of this -
+     the component reads these and hands them over. The tangent's green is
+     darker than the line's natural shade because it is also set in 12px text
+     under the plot, where the lighter one came to 3.8:1 against white. */
+  --plot-bg: #ffffff;
+  --plot-ink: #111827;
+  --plot-grid: #9ca3af;
+  --plot-curve: #2563eb;
+  --plot-tangent: #047857;
+
   font: 14px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif;
   color-scheme: light dark;
   color: var(--text-color);
@@ -21,6 +31,14 @@
     --muted-text: #9ca3af;
     --border-color: #333846;
     --hover-bg: #262a35;
+
+    /* a shade off the panel, so the plot still reads as a thing sitting on it
+       rather than a hole in it */
+    --plot-bg: #12151b;
+    --plot-ink: #e5e7eb;
+    --plot-grid: #6b7280;
+    --plot-curve: #60a5fa;
+    --plot-tangent: #34d399;
   }
 }
 

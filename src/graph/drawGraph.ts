@@ -18,6 +18,22 @@ import {
   TrigFunction,
 } from '../trig/trigMath';
 
+/** What to draw the plot in. The canvas can't read CSS, so the component
+ *  looks these up on its own element and passes them down - see
+ *  FunctionGraph.tsx and the --plot- tokens in index.css. */
+export interface PlotColors {
+  /** the ground the plot is drawn on */
+  bg: string;
+  /** axes, the point, and the numbers on the ticks */
+  ink: string;
+  /** ticks, asymptotes, and the limits an arc curve approaches */
+  grid: string;
+  /** the function itself */
+  curve: string;
+  /** the tangent line, and the slope written under the plot */
+  tangent: string;
+}
+
 export interface GraphScene {
   window: GraphWindow;
   functionMode: TrigFunction;
@@ -26,6 +42,7 @@ export interface GraphScene {
   showTangent: boolean;
   currentPoint: ReturnType<typeof getCurrentGraphPoint>;
   selectedRatio: Ratio;
+  colors: PlotColors;
 }
 
 /** Maps a point in the plot's own units onto the canvas. */
@@ -144,16 +161,17 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
     showTangent,
     currentPoint,
     selectedRatio,
+    colors,
   } = scene;
   const toScreenHere = (x: number, y: number, ww: number, hh: number) => toScreen(graphWindow, x, y, ww, hh);
     const { xMin, xMax, yMin, yMax } = graphWindow;
 
     ctx.clearRect(0, 0, w, h);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = colors.bg;
     ctx.fillRect(0, 0, w, h);
 
     // axes
-    ctx.strokeStyle = '#111827';
+    ctx.strokeStyle = colors.ink;
     ctx.lineWidth = 1.5;
     if (xMin <= 0 && xMax >= 0) {
       const [sx] = toScreenHere(0, 0, w, h);
@@ -263,7 +281,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
     const yLabels = planLabels('y', h, 40);
 
     // ticks
-    ctx.strokeStyle = '#9ca3af';
+    ctx.strokeStyle = colors.grid;
     ctx.lineWidth = 1;
     const xStep = tickStepUnder(xLabels.step, xMax - xMin, xIsAngle, angleMode);
     for (let v = Math.ceil(xMin / xStep) * xStep; v <= xMax; v += xStep) {
@@ -295,7 +313,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
     // wipe out the main curve's path (they share the canvas's one current path)
     if (!inverseMode) {
       ctx.save();
-      ctx.strokeStyle = '#9ca3af';
+      ctx.strokeStyle = colors.grid;
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
       for (const p of points) {
@@ -321,7 +339,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
         const lowerDeg = Math.round((range.lower * 180) / PI);
         const upperDeg = Math.round((range.upper * 180) / PI);
         ctx.save();
-        ctx.strokeStyle = '#9ca3af';
+        ctx.strokeStyle = colors.grid;
         ctx.lineWidth = 1;
         ctx.setLineDash([4, 4]);
         const first = Math.ceil((lowerDeg - spec.offset) / spec.period);
@@ -340,7 +358,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
       }
     }
 
-    ctx.strokeStyle = '#2563eb';
+    ctx.strokeStyle = colors.curve;
     ctx.lineWidth = 2;
     let penDown = false;
     ctx.beginPath();
@@ -371,7 +389,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
       // beside the point's own coordinates - see FunctionGraph.tsx.
       if (showTangent) {
         const slope = slopeAt(functionMode, inverseMode, angleMode, xval);
-        ctx.strokeStyle = '#059669';
+        ctx.strokeStyle = colors.tangent;
         ctx.lineWidth = 1.5;
         if (Number.isFinite(slope)) {
           const y1 = yval + slope * (xMin - xval);
@@ -393,7 +411,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
         }
       }
 
-      ctx.fillStyle = '#111827';
+      ctx.fillStyle = colors.ink;
       ctx.beginPath();
       ctx.arc(sx, sy, 5, 0, 2 * Math.PI);
       ctx.fill();
@@ -401,7 +419,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
 
     // Numbers on the ticks rather than in the corners, where they described
     // the window but said nothing about the middle of the plot.
-    ctx.fillStyle = '#111827';
+    ctx.fillStyle = colors.ink;
 
     // A step can leave almost nothing to show: an axis 3.3 radians wide takes
     // a number every pi/2, and both of them land within a few pixels of the

@@ -108,10 +108,10 @@
   font-weight: 600;
 }
 
-/* the green the tangent line is drawn in, so the number and the line it
-   describes are plainly the same thing */
+/* the green the tangent line is drawn in - the same token, so the number and
+   the line it describes cannot drift apart */
 .function-graph__slope {
-  color: #059669;
+  color: var(--plot-tangent);
   font-family: ui-monospace, 'Cascadia Mono', 'SF Mono', Menlo, Consolas, 'Liberation Mono', monospace;
   font-size: 12px;
 }

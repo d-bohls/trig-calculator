@@ -6,7 +6,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
-import { drawGraph, toMath } from '../graph/drawGraph';
+import { drawGraph, toMath, type PlotColors } from '../graph/drawGraph';
 import { getCurrentGraphPoint } from '../trig/currentPoint';
 import { formatNumber } from '../trig/format';
 import {
@@ -26,6 +26,7 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const dragging = useRef(false);
   const [size, setSize] = useState({ width: 400, height: 380 });
   const [dpr, setDpr] = useState(() => window.devicePixelRatio || 1);
+  const [theme, setTheme] = useState(() => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
   const [sweeping, setSweeping] = useState(false);
   const sweepFrame = useRef<number | null>(null);
 
@@ -122,6 +123,17 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     return () => query.removeEventListener('change', onChange);
   }, [dpr]);
 
+  // The plot is painted, not styled, so it can't follow the theme on its own:
+  // the colors are read off the canvas below and handed to the drawing. That
+  // reading has to happen again when the theme changes, and nothing about the
+  // element changes to say that it has.
+  useEffect(() => {
+    const query = matchMedia('(prefers-color-scheme: dark)');
+    const onChange = () => setTheme(query.matches ? 'dark' : 'light');
+    query.addEventListener('change', onChange);
+    return () => query.removeEventListener('change', onChange);
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -135,6 +147,16 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+    const styles = getComputedStyle(canvas);
+    const token = (name: string, fallback: string) =>
+      styles.getPropertyValue(name).trim() || fallback;
+    const colors: PlotColors = {
+      bg: token('--plot-bg', '#ffffff'),
+      ink: token('--plot-ink', '#111827'),
+      grid: token('--plot-grid', '#9ca3af'),
+      curve: token('--plot-curve', '#2563eb'),
+      tangent: token('--plot-tangent', '#047857'),
+    };
     drawGraph(ctx, size.width, size.height, {
       window: graphWindow,
       functionMode,
@@ -143,9 +165,10 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
       showTangent,
       currentPoint,
       selectedRatio,
+      colors,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size, dpr, radians, functionMode, angleMode, inverseMode, graphWindow, showTangent]);
+  }, [size, dpr, theme, radians, functionMode, angleMode, inverseMode, graphWindow, showTangent]);
 
 
   function handlePointer(clientX: number, clientY: number) {
