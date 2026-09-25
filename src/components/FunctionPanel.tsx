@@ -191,6 +191,7 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
                   places={anglePlaces}
                   highlighted={angleMode === AngleMode.Degrees}
                   onCommit={(_raw, parsed) => parsed !== null && api.setDegrees(parsed)}
+                  onStep={api.nudgeAngle}
                 />
               </Field>
               <Symbolic />
@@ -211,6 +212,7 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
                   places={anglePlaces}
                   highlighted={angleMode === AngleMode.Radians}
                   onCommit={(_raw, parsed) => parsed !== null && api.setRadians(parsed)}
+                  onStep={api.nudgeAngle}
                 />
               </Field>
               <Symbolic value={symbolicRadians(degrees) ?? undefined} />

@@ -13,10 +13,15 @@ interface NumberFieldProps {
   /** what this box holds. The visible text that says so is in a sibling label
    *  that belongs to the radio button beside it, so it names nothing here. */
   ariaLabel: string;
+  /** what the up and down arrows should do, if anything: the same step the
+   *  buttons beside the box take */
+  onStep?: (sign: 1 | -1) => void;
 }
 
 /** A textbox that shows a formatted number and commits on Enter or blur,
- *  mirroring the txtAngles/txtFunctions/txtRadius KeyPress(13)/LostFocus pattern. */
+ *  mirroring the txtAngles/txtFunctions/txtRadius KeyPress(13)/LostFocus
+ *  pattern - and stepping on the arrow keys, where a hand already is after
+ *  typing into it. */
 function format(value: number, places: number): string {
   return Number.isNaN(value) ? 'Undefined' : formatNumber(value, places);
 }
@@ -29,6 +34,7 @@ export default function NumberField({
   title,
   highlighted,
   ariaLabel,
+  onStep,
 }: NumberFieldProps) {
   // Only what's being typed is state. The rest of the time the box simply shows
   // the current value, formatted - derived on the spot rather than copied into
@@ -60,7 +66,15 @@ export default function NumberField({
       onKeyDown={(e) => {
         if (e.key === 'Enter') {
           e.currentTarget.blur();
+          return;
         }
+        if (!onStep || (e.key !== 'ArrowUp' && e.key !== 'ArrowDown')) return;
+        // the browser would otherwise run the caret to one end of the text
+        e.preventDefault();
+        // anything half-typed is taken first, so the step is from what the box
+        // says rather than from the value it was about to stop showing
+        commit();
+        onStep(e.key === 'ArrowUp' ? 1 : -1);
       }}
     />
   );
