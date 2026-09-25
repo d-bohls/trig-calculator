@@ -30,6 +30,7 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const [size, setSize] = useState({ width: 400, height: 380 });
   const [dpr, setDpr] = useState(() => window.devicePixelRatio || 1);
   const [theme, setTheme] = useState(() => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  const [printing, setPrinting] = useState(false);
   const [sweeping, setSweeping] = useState(false);
   const sweepFrame = useRef<number | null>(null);
 
@@ -137,6 +138,20 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     return () => query.removeEventListener('change', onChange);
   }, []);
 
+  // A stylesheet can restyle the page for print but not repaint a canvas that
+  // is already painted, so the plot is redrawn for paper on the way in and for
+  // the screen again on the way out.
+  useEffect(() => {
+    const before = () => setPrinting(true);
+    const after = () => setPrinting(false);
+    window.addEventListener('beforeprint', before);
+    window.addEventListener('afterprint', after);
+    return () => {
+      window.removeEventListener('beforeprint', before);
+      window.removeEventListener('afterprint', after);
+    };
+  }, []);
+
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
@@ -153,14 +168,26 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     const styles = getComputedStyle(canvas);
     const token = (name: string, fallback: string) =>
       styles.getPropertyValue(name).trim() || fallback;
-    const colors: PlotColors = {
-      bg: token('--plot-bg', '#ffffff'),
-      ink: token('--plot-ink', '#111827'),
-      grid: token('--plot-grid', '#9ca3af'),
-      gridline: token('--plot-gridline', '#eceef1'),
-      curve: token('--plot-curve', '#2563eb'),
-      tangent: token('--plot-tangent', '#047857'),
-    };
+    // On paper the theme is beside the point: a dark plot is a black rectangle
+    // that drinks ink, and the ruled lines that are barely there on a screen
+    // are not there at all once printed, so they come up a few shades.
+    const colors: PlotColors = printing
+      ? {
+          bg: '#ffffff',
+          ink: '#111827',
+          grid: '#6b7280',
+          gridline: '#d5d9e0',
+          curve: '#1d4ed8',
+          tangent: '#047857',
+        }
+      : {
+          bg: token('--plot-bg', '#ffffff'),
+          ink: token('--plot-ink', '#111827'),
+          grid: token('--plot-grid', '#9ca3af'),
+          gridline: token('--plot-gridline', '#eceef1'),
+          curve: token('--plot-curve', '#2563eb'),
+          tangent: token('--plot-tangent', '#047857'),
+        };
     drawGraph(ctx, size.width, size.height, {
       window: graphWindow,
       functionMode,
@@ -172,7 +199,7 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
       colors,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [size, dpr, theme, radians, functionMode, angleMode, inverseMode, graphWindow, showTangent]);
+  }, [size, dpr, theme, printing, radians, functionMode, angleMode, inverseMode, graphWindow, showTangent]);
 
 
   function handlePointer(clientX: number, clientY: number, toStep = false) {

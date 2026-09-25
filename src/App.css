@@ -132,26 +132,58 @@
   }
 }
 
+/* Paper has no columns to fill and nothing to click. The panels still open go
+   one under another, each kept whole on its page, and everything that exists
+   to be operated rather than read is left off. What prints is what the app
+   says about one angle: the six values, the circle, and the curve. */
 @media print {
   .app {
     height: auto;
   }
+
   .app__main {
     display: block;
   }
+
   .app__panel {
     border: none;
-    page-break-inside: avoid;
+    padding: 0;
+    break-inside: avoid;
   }
+
+  .app__panel + .app__panel {
+    margin-top: 18px;
+  }
+
+  /* The six values are the most printable thing here, and the panel used to be
+     dropped from the page altogether - a sheet with a picture of an angle and
+     no table of what it comes to. */
   .app__panel--function {
-    display: none;
+    display: flex;
   }
-  /* a collapsed section is a screen convenience - print the whole thing */
+
   .app__panel-toggle,
   .app__panel-actions {
     display: none !important;
   }
-  .app__panel-body {
-    display: contents !important;
+
+  /* A section closed on screen stays closed on paper - closing one is how you
+     say you are done with it, and printing it anyway ignores that. It goes
+     entirely rather than printing as a bare title. */
+  .app__panel[data-collapsed='true'] {
+    display: none;
+  }
+
+  /* the play button sweeps a point that isn't going anywhere on paper, and the
+     tangent's checkbox says what the line already shows */
+  .function-graph__toolbar {
+    display: none;
+  }
+
+  /* the steppers, the period buttons and the radios' own boxes are controls;
+     which function is selected still reads from the highlighted row */
+  .stepper,
+  .function-panel__period-buttons {
+    display: none;
   }
 }
