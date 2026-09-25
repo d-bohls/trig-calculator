@@ -8,18 +8,29 @@
 
 .app__main {
   flex: 1;
-  display: grid;
-  /* controls (fixed) | circle (aspect-locked, so the narrower share) |
-     graph (gets the larger share, since it's the one that uses the space) */
-  grid-template-columns: 440px minmax(280px, 1fr) minmax(320px, 1.3fr);
-  /* the row is sized by its tallest panel's content (normally the graph,
-     whose height follows its own width now that the plot is square). Every
-     panel stretches to match that height, and when the window is shorter
-     than it, the page scrolls rather than anything being squeezed. */
-  grid-template-rows: min-content;
+  /* A row of panels rather than a grid of tracks. The widths below say the
+     same thing the tracks did - controls fixed, circle the narrower share,
+     graph the larger, since it is the one that uses the space - but each
+     panel now carries its own, which lets a closed one shrink to a bar and
+     hand what it had to the others. A grid's tracks are declared on the
+     container, which would have meant lifting every panel's open/closed state
+     up here to write them. */
+  display: flex;
   align-items: stretch;
   gap: 12px;
   padding: 12px;
+}
+
+.app__panel--function {
+  flex: 0 0 440px;
+}
+
+.app__panel--circle {
+  flex: 1 1 280px;
+}
+
+.app__panel--graph {
+  flex: 1.3 1 320px;
 }
 
 .app__panel {
@@ -57,27 +68,10 @@
   margin-left: auto;
 }
 
-/* collapsing only makes sense stacked, where an unused section is something
-   to scroll past - so the title is hidden side by side, and the collapsed flag
-   with it. Widening the window reopens everything without discarding which
-   sections were closed. */
-.app__panel-toggle {
-  display: none;
-}
-
-@media (max-width: 1100px) {
-  .app__main {
-    /* grid's "auto" row sizing miscomputes intrinsic height for the
-       aspect-ratio circle SVG at this breakpoint, so stack with flex instead
-       (align-items: stretch here means "full-width panels", which is what
-       we want when stacked - same declaration as above, different axis) */
-    display: flex;
-    flex-direction: column;
-  }
-
-  /* two classes deep to beat the global button reset in index.css, which is a
-     `button:not(...)` rule and so more specific than a lone class */
-  .app__panel .app__panel-toggle {
+/* The title doubles as the control that opens and closes its panel, at every
+   width. Two classes deep to beat the global button reset in index.css, which
+   is a `button:not(...)` rule and so more specific than a lone class. */
+.app__panel .app__panel-toggle {
     display: flex;
     align-items: center;
     gap: 8px;
@@ -98,37 +92,102 @@
     -webkit-tap-highlight-color: transparent;
   }
 
-  /* see index.css: hover states are for pointers that can hover */
-  @media (hover: hover) {
-    .app__panel .app__panel-toggle:hover {
-      color: var(--text-color);
-    }
+/* see index.css: hover states are for pointers that can hover */
+@media (hover: hover) {
+  .app__panel .app__panel-toggle:hover {
+    color: var(--text-color);
   }
 
-  .app__panel-chevron {
-    /* fixed box, so rotating it can't nudge the title sideways */
-    display: inline-block;
-    width: 18px;
-    text-align: center;
-    /* As large as it can be for free: the row is 28px and the button adds 4px
-       of padding either side, so anything up to 20 fits in space the header
-       already occupies. Past that the arrow starts pushing the panel down. */
-    font-size: 20px;
-    line-height: 1;
-    transition: transform 120ms ease;
+  /* the bar lights up as a whole, since it opens as a whole */
+  .app__panel[data-collapsed='true'] .app__panel-toggle:hover {
+    background: var(--hover-bg);
+  }
+}
+
+.app__panel-chevron {
+  /* fixed box, so rotating it can't nudge the title sideways */
+  display: inline-block;
+  width: 18px;
+  text-align: center;
+  /* As large as it can be for free: the row is 28px and the button adds 4px
+     of padding either side, so anything up to 20 fits in space the header
+     already occupies. Past that the arrow starts pushing the panel down. */
+  font-size: 20px;
+  line-height: 1;
+  transition: transform 120ms ease;
+}
+
+.app__panel[data-collapsed='true'] .app__panel-chevron {
+  transform: rotate(-90deg);
+}
+
+.app__panel[data-collapsed='true'] .app__panel-body {
+  display: none;
+}
+
+/* nothing below the header when closed, so don't reserve room for it */
+.app__panel[data-collapsed='true'] .app__panel-head {
+  margin-bottom: 0;
+}
+
+@media (max-width: 1100px) {
+  .app__main {
+    /* Stacked, where a panel takes the full width and an unused one is
+       something to scroll past. Flex either way, only the direction changes -
+       and align-items: stretch then means "full-width panels". */
+    flex-direction: column;
   }
 
+  /* the widths above belong to the row; down here every panel is as wide as
+     the column */
+  .app__panel--function,
+  .app__panel--circle,
+  .app__panel--graph {
+    flex: 0 0 auto;
+  }
+}
+
+/* Side by side, a closed panel shrinks to a bar down the side of the page and
+   gives its width to the panels still open, which is the point of closing it
+   there - stacked, closing one buys back height instead. The title turns with
+   the bar, reading upwards, and the chevron turns with it to point the way the
+   panel opens. */
+@media (min-width: 1101px) {
+  /* The bar is the button. With the chevron gone there is nothing in it to
+     aim at, so the title stretches to fill it and the padding moves inside -
+     a click anywhere down the bar opens the panel. */
+  .app__panel[data-collapsed='true'] {
+    flex: 0 0 auto;
+    padding: 0;
+  }
+
+  .app__panel[data-collapsed='true'] .app__panel-head {
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+  }
+
+  .app__panel[data-collapsed='true'] .app__panel-toggle {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    flex: 1;
+    align-self: stretch;
+    justify-content: center;
+    padding: 12px 8px;
+    border-radius: 10px;
+  }
+
+  /* The chevron turns with the writing mode, which leaves it pointing along
+     the bar rather than at anything. A title standing on its side is already
+     the whole affordance, so it goes. */
   .app__panel[data-collapsed='true'] .app__panel-chevron {
-    transform: rotate(-90deg);
-  }
-
-  .app__panel[data-collapsed='true'] .app__panel-body {
     display: none;
   }
 
-  /* nothing below the header when closed, so don't reserve room for it */
-  .app__panel[data-collapsed='true'] .app__panel-head {
-    margin-bottom: 0;
+  /* and the settings of a panel you have just put away are not what the bar is
+     for - they come back with it */
+  .app__panel[data-collapsed='true'] .app__panel-actions {
+    display: none;
   }
 }
 
