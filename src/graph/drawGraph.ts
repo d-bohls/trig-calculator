@@ -28,6 +28,8 @@ export interface PlotColors {
   ink: string;
   /** ticks, asymptotes, and the limits an arc curve approaches */
   grid: string;
+  /** the ruled lines carrying each number across the plot */
+  gridline: string;
   /** the function itself */
   curve: string;
   /** the tangent line, and the slope written under the plot */
@@ -111,6 +113,10 @@ function stepCandidates(range: number, isAngle: boolean, angleMode: AngleMode): 
 const MIN_LABELS = 2;
 const MAX_LABELS = 8;
 
+// past this many asymptotes their angles stop being worth naming - the lines
+// themselves say where they are, and a row of labels along the top says less
+const MAX_ASYMPTOTE_LABELS = 4;
+
 function tickStepUnder(labelStep: number, range: number, isAngle: boolean, angleMode: AngleMode): number {
   const divisors = !isAngle
     ? PLAIN_DIVISORS
@@ -169,24 +175,6 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
     ctx.clearRect(0, 0, w, h);
     ctx.fillStyle = colors.bg;
     ctx.fillRect(0, 0, w, h);
-
-    // axes
-    ctx.strokeStyle = colors.ink;
-    ctx.lineWidth = 1.5;
-    if (xMin <= 0 && xMax >= 0) {
-      const [sx] = toScreenHere(0, 0, w, h);
-      ctx.beginPath();
-      ctx.moveTo(sx, 0);
-      ctx.lineTo(sx, h);
-      ctx.stroke();
-    }
-    if (yMin <= 0 && yMax >= 0) {
-      const [, sy] = toScreenHere(0, 0, w, h);
-      ctx.beginPath();
-      ctx.moveTo(0, sy);
-      ctx.lineTo(w, sy);
-      ctx.stroke();
-    }
 
     // Which axis carries the angle swaps with the function type: a standard
     // function takes an angle across and returns a ratio up, an arc function
@@ -280,6 +268,43 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
     const xLabels = planLabels('x', w, widest('x') + 24);
     const yLabels = planLabels('y', h, 40);
 
+    // A ruled line at every number, so a value can be read off the middle of
+    // the plot rather than only where the curve meets an axis. Pale enough to
+    // sit under the curve without competing with it, and drawn before the axes
+    // so it passes beneath them rather than over.
+    ctx.strokeStyle = colors.gridline;
+    ctx.lineWidth = 1;
+    for (const label of xLabels.values) {
+      ctx.beginPath();
+      ctx.moveTo(label.at, 0);
+      ctx.lineTo(label.at, h);
+      ctx.stroke();
+    }
+    for (const label of yLabels.values) {
+      ctx.beginPath();
+      ctx.moveTo(0, label.at);
+      ctx.lineTo(w, label.at);
+      ctx.stroke();
+    }
+
+    // axes
+    ctx.strokeStyle = colors.ink;
+    ctx.lineWidth = 1.5;
+    if (xMin <= 0 && xMax >= 0) {
+      const [sx] = toScreenHere(0, 0, w, h);
+      ctx.beginPath();
+      ctx.moveTo(sx, 0);
+      ctx.lineTo(sx, h);
+      ctx.stroke();
+    }
+    if (yMin <= 0 && yMax >= 0) {
+      const [, sy] = toScreenHere(0, 0, w, h);
+      ctx.beginPath();
+      ctx.moveTo(0, sy);
+      ctx.lineTo(w, sy);
+      ctx.stroke();
+    }
+
     // ticks
     ctx.strokeStyle = colors.grid;
     ctx.lineWidth = 1;
@@ -316,8 +341,8 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
       ctx.strokeStyle = colors.grid;
       ctx.lineWidth = 1;
       ctx.setLineDash([4, 4]);
-      for (const p of points) {
-        if (!p.isUndefined) continue;
+      const asymptotes = points.filter((p) => p.isUndefined);
+      for (const p of asymptotes) {
         const [sx] = toScreenHere(p.x, 0, w, h);
         ctx.beginPath();
         ctx.moveTo(sx, 0);
@@ -325,6 +350,26 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
         ctx.stroke();
       }
       ctx.restore();
+
+      // The angle each one stands at, which is rarely one of the numbers on
+      // the axis - tangent blows up at 90 degrees on an axis numbered every
+      // 180. Only while there are few enough to read: a wide window holds a
+      // dozen, and a dozen labels along the top says less than the lines do.
+      if (asymptotes.length <= MAX_ASYMPTOTE_LABELS) {
+        ctx.fillStyle = colors.grid;
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.textBaseline = 'top';
+        for (const p of asymptotes) {
+          const [sx] = toScreenHere(p.x, 0, w, h);
+          const text = formatTick(p.x, true, angleMode);
+          const half = ctx.measureText(text).width / 2;
+          if (sx - half < 2 || sx + half > w - 2) continue;
+          ctx.fillText(text, sx, 4);
+        }
+        ctx.textAlign = 'left';
+        ctx.textBaseline = 'alphabetic';
+      }
     } else {
       // Arc mode swaps the axes, so the standard function's vertical asymptotes
       // become the horizontal limits its arc curve approaches without reaching.
@@ -344,6 +389,7 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
         ctx.setLineDash([4, 4]);
         const first = Math.ceil((lowerDeg - spec.offset) / spec.period);
         const last = Math.floor((upperDeg - spec.offset) / spec.period);
+        const drawn: { at: number; text: string }[] = [];
         for (let k = first; k <= last; k += 1) {
           const degrees = spec.offset + k * spec.period;
           const yv = angleMode === AngleMode.Degrees ? degrees : (degrees * PI) / 180;
@@ -353,8 +399,24 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
           ctx.moveTo(0, sy);
           ctx.lineTo(w, sy);
           ctx.stroke();
+          drawn.push({ at: sy, text: formatTick(yv, true, angleMode) });
         }
         ctx.restore();
+
+        // the angle the curve climbs towards, written against the right edge
+        // where the curve has flattened out and is least likely to be under it
+        if (drawn.length <= MAX_ASYMPTOTE_LABELS) {
+          ctx.fillStyle = colors.grid;
+          ctx.font = '11px sans-serif';
+          ctx.textAlign = 'right';
+          ctx.textBaseline = 'bottom';
+          for (const limit of drawn) {
+            if (limit.at < 12 || limit.at > h - 2) continue;
+            ctx.fillText(limit.text, w - 4, limit.at - 2);
+          }
+          ctx.textAlign = 'left';
+          ctx.textBaseline = 'alphabetic';
+        }
       }
     }
 
@@ -382,6 +444,21 @@ export function drawGraph(ctx: CanvasRenderingContext2D, w: number, h: number, s
     const pointVisible = xval >= xMin && xval <= xMax && yval >= yMin && yval <= yMax && !selectedRatio.isUndefined;
     if (pointVisible) {
       const [sx, sy] = toScreenHere(xval, yval, w, h);
+
+      // Two guides from the point to the axes, so the pair of numbers written
+      // under the plot can be found on the scales as well. Faint and dashed:
+      // they are a way of reading the plot, not part of what is plotted.
+      ctx.save();
+      ctx.strokeStyle = colors.grid;
+      ctx.lineWidth = 1;
+      ctx.setLineDash([3, 3]);
+      ctx.beginPath();
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(sx, Math.min(Math.max(axisY, 0), h));
+      ctx.moveTo(sx, sy);
+      ctx.lineTo(Math.min(Math.max(axisX, 0), w), sy);
+      ctx.stroke();
+      ctx.restore();
 
       // the tangent first, so the point sits on top of it: the line passes
       // straight through the point it is drawn for, and on top it cut the

@@ -15,6 +15,7 @@
   --plot-grid: #9ca3af;
   --plot-curve: #2563eb;
   --plot-tangent: #047857;
+  --plot-gridline: #eceef1;
 
   font: 14px/1.4 system-ui, 'Segoe UI', Roboto, sans-serif;
   color-scheme: light dark;
@@ -39,6 +40,7 @@
     --plot-grid: #6b7280;
     --plot-curve: #60a5fa;
     --plot-tangent: #34d399;
+    --plot-gridline: #20242d;
   }
 }
 

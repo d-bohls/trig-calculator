@@ -154,6 +154,7 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
       bg: token('--plot-bg', '#ffffff'),
       ink: token('--plot-ink', '#111827'),
       grid: token('--plot-grid', '#9ca3af'),
+      gridline: token('--plot-gridline', '#eceef1'),
       curve: token('--plot-curve', '#2563eb'),
       tangent: token('--plot-tangent', '#047857'),
     };
