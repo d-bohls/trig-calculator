@@ -20,6 +20,11 @@ export const AngleMode = {
 } as const;
 export type AngleMode = (typeof AngleMode)[keyof typeof AngleMode];
 
+/** "Arcsin", "Arccos", ... - what the inverse of each one is called. */
+export function arcFunctionName(fn: TrigFunction): string {
+  return `Arc${TRIG_FUNCTION_LABELS[fn].toLowerCase()}`;
+}
+
 export const TRIG_FUNCTION_LABELS: Record<TrigFunction, string> = {
   [TrigFunction.Sine]: 'Sin',
   [TrigFunction.Cosine]: 'Cos',

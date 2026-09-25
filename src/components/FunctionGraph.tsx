@@ -8,16 +8,19 @@ import { useEffect, useRef, useState } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
 import { drawGraph, toMath, type PlotColors } from '../graph/drawGraph';
 import { getCurrentGraphPoint } from '../trig/currentPoint';
-import { formatNumber } from '../trig/format';
+import { displayAngle, formatNumber } from '../trig/format';
 import {
   AngleMode,
+  arcFunctionName,
   clampToArcDomain,
   getRadians,
   PI,
   slopeAt,
+  TRIG_FUNCTION_LABELS,
   TRIG_FUNCTION_NAMES,
 } from '../trig/trigMath';
 import PlayIcon from './PlayIcon';
+import StopIcon from './StopIcon';
 import './FunctionGraph.css';
 
 export default function FunctionGraph({ api }: { api: CalculatorApi }) {
@@ -172,54 +175,61 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   }, [size, dpr, theme, radians, functionMode, angleMode, inverseMode, graphWindow, showTangent]);
 
 
-  function handlePointer(clientX: number, clientY: number) {
+  function handlePointer(clientX: number, clientY: number, toStep = false) {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const [mathX] = toMath(graphWindow, clientX - rect.left, clientY - rect.top, rect.width, rect.height);
-    // snap to a whole degree, so dragging back and forth can't drift the angle
+    // Whole degrees, so dragging back and forth can't drift the angle - or the
+    // settings' own step while shift is held, which is how to land on 30 or 45
+    // exactly without reaching for the steppers.
+    const step = api.angleStepDegrees;
+    const place = (d: number) => api.setDegreesSnapped(toStep ? Math.round(d / step) * step : d);
     if (!inverseMode) {
       // x is the angle itself, in whichever unit the axis is showing
-      api.setDegreesSnapped(angleMode === AngleMode.Degrees ? mathX : (mathX * 180) / PI);
+      place(angleMode === AngleMode.Degrees ? mathX : (mathX * 180) / PI);
     } else {
       // x is the input ratio; the angle comes back out of the arc function.
       // Clicking past the end of the curve pulls the point to the endpoint
       // rather than doing nothing at all.
       const { radians: r, ok } = getRadians(functionMode, clampToArcDomain(functionMode, mathX));
-      if (ok) api.setDegreesSnapped((r * 180) / PI);
+      if (ok) place((r * 180) / PI);
     }
   }
 
-  /** The point's coordinates, each to the Function settings' places for what it
-   *  actually is - the angle axis to the angle places, the ratio axis to the
-   *  result places. Arc mode swaps which axis is which. */
+  /** The point written as the equation it stands for, the way the circle panel
+   *  writes the same fact - a pair of bracketed numbers said which point it is
+   *  but not what it means. Each side takes the Function settings' places for
+   *  what it is: the angle its angle places, the ratio its result places. */
   function readoutText(): string {
-    const xPlaces = inverseMode ? resultPlaces : anglePlaces;
-    const yPlaces = inverseMode ? anglePlaces : resultPlaces;
-    if (selectedRatio.isUndefined) {
-      return inverseMode
-        ? `(Undefined, ${formatNumber(currentPoint.yval, yPlaces)})`
-        : `(${formatNumber(currentPoint.xval, xPlaces)}, Undefined)`;
+    const angleText = displayAngle(degrees, angleMode, anglePlaces);
+    const name = TRIG_FUNCTION_LABELS[functionMode];
+    // An arc function's input is the ratio, and at an angle where the ratio
+    // doesn't exist there is nothing to put in the brackets - no point on the
+    // curve either, which is why none is drawn. Writing Arccot(Undefined) =
+    // 180 claimed an answer to a question that was never asked; the fact worth
+    // stating is the one that went wrong, which is Cot(180) itself.
+    if (selectedRatio.isUndefined) return `${name}(${angleText}) = Undefined`;
+    if (inverseMode) {
+      return `${arcFunctionName(functionMode)}(${formatNumber(currentPoint.xval, resultPlaces)}) = ${angleText}`;
     }
-    return `(${formatNumber(currentPoint.xval, xPlaces)}, ${formatNumber(currentPoint.yval, yPlaces)})`;
+    return `${name}(${angleText}) = ${formatNumber(currentPoint.yval, resultPlaces)}`;
   }
 
-  /** What the tangent's slope comes to, or null when no tangent is drawn -
-   *  which is whenever the point itself isn't, since a line through a point
-   *  off the plot has nothing to be tangent to. */
+  /** What the tangent's slope comes to, whenever a tangent has been asked
+   *  for. It says so even where there is no slope to give: the alternative
+   *  was the line vanishing, which reads as the answer being zero rather than
+   *  absent, and takes its place in the row with it. Only the point being off
+   *  the window leaves the number standing without its line, and the slope is
+   *  a fact about the function there whether or not the plot reaches it. */
   function slopeText(): string | null {
-    const { xval, yval } = currentPoint;
-    const { xMin, xMax, yMin, yMax } = graphWindow;
-    const drawn =
-      showTangent &&
-      !selectedRatio.isUndefined &&
-      xval >= xMin &&
-      xval <= xMax &&
-      yval >= yMin &&
-      yval <= yMax;
-    if (!drawn) return null;
-    const slope = slopeAt(functionMode, inverseMode, angleMode, xval);
-    if (Number.isFinite(slope)) return `slope ≈ ${formatNumber(slope, resultPlaces)}`;
+    if (!showTangent) return null;
+    if (selectedRatio.isUndefined) return 'slope undefined';
+    const slope = slopeAt(functionMode, inverseMode, angleMode, currentPoint.xval);
+    // "=" rather than "approximately": the derivative is exact, and what is
+    // shown is rounded to the same places as every other number in the app,
+    // all of which are written with an equals sign
+    if (Number.isFinite(slope)) return `slope = ${formatNumber(slope, resultPlaces)}`;
     // vertical, where arcsine and friends meet the ends of their domain
     return slope > 0 ? 'slope → ∞' : 'slope → -∞';
   }
@@ -227,14 +237,16 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   return (
     <div className="function-graph">
       <div className="function-graph__toolbar">
+        {/* the same button either way: while a sweep runs it is the thing
+            that stops it, rather than leaving that to a tap anywhere */}
         <button
           type="button"
           className="icon-button function-graph__play"
-          onClick={startSweep}
-          aria-label="Sweep the point across the graph"
-          title="Sweep the point across the graph"
+          onClick={sweeping ? stopSweep : startSweep}
+          aria-label={sweeping ? 'Stop the sweep' : 'Sweep the point across the graph'}
+          title={sweeping ? 'Stop the sweep' : 'Sweep the point across the graph'}
         >
-          <PlayIcon />
+          {sweeping ? <StopIcon /> : <PlayIcon />}
         </button>
         <label className="function-graph__tangent">
           <input
@@ -251,14 +263,14 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
           role="img"
           aria-label={`${inverseMode ? 'Inverse ' : ''}${
             TRIG_FUNCTION_NAMES[functionMode]
-          } plotted from ${graphWindow.xMin} to ${graphWindow.xMax}. Current point ${readoutText()}. Drag to move it; the angle can also be typed into the Functions panel.`}
+          } plotted from ${graphWindow.xMin} to ${graphWindow.xMax}. ${readoutText()}. Drag to move the point, holding shift to snap it to the angle step; the angle can also be typed into the Functions panel.`}
           onPointerDown={(e) => {
             e.currentTarget.setPointerCapture(e.pointerId);
             dragging.current = true;
-            handlePointer(e.clientX, e.clientY);
+            handlePointer(e.clientX, e.clientY, e.shiftKey);
           }}
           onPointerMove={(e) => {
-            if (dragging.current) handlePointer(e.clientX, e.clientY);
+            if (dragging.current) handlePointer(e.clientX, e.clientY, e.shiftKey);
           }}
           onPointerUp={(e) => {
             dragging.current = false;

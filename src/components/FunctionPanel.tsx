@@ -14,6 +14,7 @@ import { parseNumber } from '../trig/parseNumber';
 import { lookupSymbolic, symbolicForFunction, symbolicRadians } from '../trig/symbolicTable';
 import {
   AngleMode,
+  arcFunctionName,
   getInverseFunctionRange,
   getRadians,
   PI,
@@ -36,10 +37,6 @@ const FUNCTIONS = [
 
 /** "Sin" -> "Arcsin". All six come out six characters wide, so the rows still
  *  line up in the monospace face. */
-function arcName(fn: TrigFunction): string {
-  return `Arc${TRIG_FUNCTION_LABELS[fn].toLowerCase()}`;
-}
-
 /** Tangent and cotangent never reach their bounds, so those get open brackets. */
 function isOpenRange(fn: TrigFunction): boolean {
   return fn === TrigFunction.Tangent || fn === TrigFunction.Cotangent;
@@ -100,7 +97,7 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
         <NumberField
           ariaLabel={
             inverseMode
-              ? `Ratio passed to ${arcName(fn)}`
+              ? `Ratio passed to ${arcFunctionName(fn)}`
               : `${TRIG_FUNCTION_LABELS[fn]} of ${angleText}`
           }
           value={ratio.isUndefined ? NaN : ratio.value}
@@ -140,7 +137,7 @@ export default function FunctionPanel({ api }: { api: CalculatorApi }) {
       <div className="function-panel__row function-panel__row--trig function-panel__row--arc" key={fn}>
         <label className="function-panel__call function-panel__call--arc">
           {radio}
-          <span>{arcName(fn)}(</span>
+          <span>{arcFunctionName(fn)}(</span>
         </label>
         {field}
         <span className="function-panel__arc-result">
