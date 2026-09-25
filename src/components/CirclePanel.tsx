@@ -23,7 +23,12 @@ import './CirclePanel.css';
 // set to overflow visible and paints them into the panel's padding rather than
 // slicing them off.
 const CIRCLE_R = 130;
-const SIDE_LABEL_ROOM = 68;
+// Room either side for the point marker's ring and the circle's own stroke,
+// and no more. There used to be 68 units of it for labels that stood outside
+// the disc; with those moved inside, that much empty margin only made the
+// drawing smaller inside whatever box it was given - which on a phone, where
+// the box is half the panel, left the disc too small for the labels now in it.
+const SIDE_LABEL_ROOM = 4;
 const TOP_ROOM = 0;
 const MARGIN = 8;
 const WIDTH = CIRCLE_R * 2 + (SIDE_LABEL_ROOM + MARGIN) * 2;
@@ -355,39 +360,46 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
             equation below already settle. Each sits just clear of the axis it
             marks, so it names the end of the axis without lying on it - and
             the two on the horizontal go below it, where a first-quadrant
-            angle, which is most of them, doesn't draw its triangle. */}
+            angle, which is most of them, doesn't draw its triangle.
+
+            Hung from their top edge rather than sat on a baseline, because the
+            text is larger in these units on a phone: an inset measured to the
+            baseline put the letters back over the rim there. */}
         <text
           className="circle-panel__axis-label"
-          x={CENTER_X + CIRCLE_R - 6}
-          y={CENTER_Y + 14}
+          x={CENTER_X + CIRCLE_R - 10}
+          y={CENTER_Y + 4}
           fontSize="11"
           fill="#111827"
           textAnchor="end"
+          dominantBaseline="hanging"
         >
           {quarterLabel(0)}
         </text>
         <text
           className="circle-panel__axis-label"
-          x={CENTER_X - CIRCLE_R + 6}
-          y={CENTER_Y + 14}
+          x={CENTER_X - CIRCLE_R + 10}
+          y={CENTER_Y + 4}
           fontSize="11"
           fill="#111827"
+          dominantBaseline="hanging"
         >
           {quarterLabel(180)}
         </text>
         <text
           className="circle-panel__axis-label"
           x={CENTER_X + 6}
-          y={CENTER_Y - CIRCLE_R + 14}
+          y={CENTER_Y - CIRCLE_R + 13}
           fontSize="11"
           fill="#111827"
+          dominantBaseline="hanging"
         >
           {quarterLabel(90)}
         </text>
         <text
           className="circle-panel__axis-label"
           x={CENTER_X + 6}
-          y={CENTER_Y + CIRCLE_R - 6}
+          y={CENTER_Y + CIRCLE_R - 13}
           fontSize="11"
           fill="#111827"
         >

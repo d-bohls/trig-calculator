@@ -8,8 +8,8 @@
 
 .circle-panel__svg {
   width: 100%;
-  max-width: 412px;
-  aspect-ratio: 412 / 308;
+  max-width: 284px;
+  aspect-ratio: 284 / 308;
   /* the circle sits flush with the top edge, so its stroke and the point
      marker at 90 degrees need to paint past it - see CirclePanel.tsx */
   overflow: visible;
@@ -99,38 +99,33 @@
     width: 50%;
   }
 
-  /* The whole drawing is scaled to half, text included, which would leave
-     these at about four pixels. They are sized in the viewBox's own units, so
-     doubling here just puts them back where they started on screen. */
+  /* Everything in here is sized in the viewBox's own units, and at half the
+     width those units come out at about three fifths of their desktop size.
+     Each of these is scaled up by roughly that much, to land back where it
+     sits on a desktop - the strokes a little heavier than that, which is what
+     a small diagram wants, and which is why the triangle reads at all. */
   .circle-panel__axis-label {
-    font-size: 24px;
+    font-size: 18px;
   }
 
-  /* same treatment as the axis labels above: sized in viewBox units, so it
-     needs doubling to come out the size it is on a desktop */
   .circle-panel__theta {
-    font-size: 26px;
+    font-size: 21px;
   }
 
-  /* Everything else in here is scaled down with the drawing, which would leave
-     the triangle at well under a pixel. These are viewBox units, so roughly
-     two and a half times the desktop width lands about where the desktop one
-     does on screen - and a little heavier, which is what a small diagram
-     wants. */
   .circle-panel__segment {
-    stroke-width: 7;
+    stroke-width: 5;
   }
 
   .circle-panel__bar {
-    stroke-width: 7;
+    stroke-width: 5;
   }
 
   .circle-panel__disc {
-    stroke-width: 2;
+    stroke-width: 1.5;
   }
 
-  /* the point's ring, doubled to survive the halving like everything above */
+  /* the point's ring, scaled like everything above */
   .circle-panel__point {
-    stroke-width: 6;
+    stroke-width: 4;
   }
 }
