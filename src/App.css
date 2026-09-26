@@ -172,7 +172,10 @@
     transform: rotate(180deg);
     flex: 1;
     align-self: stretch;
-    justify-content: center;
+    /* the title sits at the top of the bar, where a heading sits on the panel
+       it names. The rotation turns the text around, so the end of the line is
+       the top of the bar. */
+    justify-content: flex-end;
     padding: 12px 8px;
     border-radius: 10px;
   }
