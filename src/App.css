@@ -176,15 +176,25 @@
        it names. The rotation turns the text around, so the end of the line is
        the top of the bar. */
     justify-content: flex-end;
-    padding: 12px 8px;
+    /* The bar drops the panel's own padding, so the button carries it: the 15px at
+       the top is what it takes to land the arrow level with the arrows of the
+       panels either side of it. The rotation
+       means that end of the padding is the one written last. */
+    padding: 12px 8px 15px;
     border-radius: 10px;
   }
 
-  /* The chevron turns with the writing mode, which leaves it pointing along
-     the bar rather than at anything. A title standing on its side is already
-     the whole affordance, so it goes. */
+  /* The chevron stays as it is on an open panel: upright, at the top of the
+     bar, level with the chevrons of the panels either side of it, pointing the
+     way this one opens. The title turns with the bar but the arrow must not -
+     an arrow lying on its side points at nothing - so it steps back out of the
+     vertical writing mode and undoes the bar's half turn, leaving the same
+     quarter turn to the right that a closed panel has when stacked. It also
+     goes last, which the half turn puts first, so it ends up above the title. */
   .app__panel[data-collapsed='true'] .app__panel-chevron {
-    display: none;
+    order: 1;
+    writing-mode: horizontal-tb;
+    transform: rotate(90deg);
   }
 
   /* and the settings of a panel you have just put away are not what the bar is
