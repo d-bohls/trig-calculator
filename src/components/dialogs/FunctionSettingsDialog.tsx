@@ -15,18 +15,37 @@ export default function FunctionSettingsDialog({ api, onClose }: { api: Calculat
     anglePlaces: api.anglePlaces,
     resultPlaces: api.resultPlaces,
     angleStepDegrees: api.angleStepDegrees,
+    inverseMode: api.inverseMode,
+    angleMode: api.angleMode,
+    functionMode: api.functionMode,
+    degrees: api.degrees,
   });
 
+  /** Puts the panel back the way it was opened - including what Reset changed
+   *  beyond this dialog's own fields. */
   function cancel() {
     const s = initial.current;
     api.setDecimalPlaces(s.anglePlaces, s.resultPlaces);
     api.setAngleStep(s.angleStepDegrees);
+    api.setInverseMode(s.inverseMode);
+    api.setAngleMode(s.angleMode);
+    api.setFunctionMode(s.functionMode);
+    api.setDegrees(s.degrees);
     onClose();
   }
 
+  /** The whole panel as the app first opens it, not just the two or three
+   *  numbers this dialog holds: standard functions, degrees, sine selected, at
+   *  the angle it starts on. The mode goes back before the angle does, since
+   *  an arc function would pull an angle outside its range back in on the way
+   *  past. */
   function reset() {
     api.setDecimalPlaces(DEFAULT_SETTINGS.anglePlaces, DEFAULT_SETTINGS.resultPlaces);
     api.setAngleStep(DEFAULT_SETTINGS.angleStepDegrees);
+    api.setInverseMode(DEFAULT_SETTINGS.inverseMode);
+    api.setAngleMode(DEFAULT_SETTINGS.angleMode);
+    api.setFunctionMode(DEFAULT_SETTINGS.functionMode);
+    api.setDegrees(DEFAULT_SETTINGS.degrees);
   }
 
   const row = (label: string, value: number, onChange: (n: number) => void) => (
@@ -50,6 +69,7 @@ export default function FunctionSettingsDialog({ api, onClose }: { api: Calculat
         {row('Result decimal places', api.resultPlaces, (v) =>
           api.setDecimalPlaces(api.anglePlaces, v),
         )}
+        <hr className="settings-dialog__divider" />
         <div className="settings-dialog__actions">
           <button type="button" onClick={onClose}>
             OK

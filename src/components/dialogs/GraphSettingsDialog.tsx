@@ -14,7 +14,11 @@ import './SettingsDialog.css';
 type FieldKey = 'xMin' | 'xMax' | 'yMin' | 'yMax';
 
 export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorApi; onClose: () => void }) {
-  const initial = useRef({ window: api.graphWindow, sweepSeconds: api.sweepSeconds });
+  const initial = useRef({
+    window: api.graphWindow,
+    sweepSeconds: api.sweepSeconds,
+    showTangent: api.showTangent,
+  });
 
   const [xMin, setXMin] = useState(String(api.graphWindow.xMin));
   const [xMax, setXMax] = useState(String(api.graphWindow.xMax));
@@ -58,12 +62,17 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
     tryApply(next);
   }
 
+  /** Puts the panel back the way it was opened - including what Reset changed
+   *  beyond this dialog's own fields. */
   function cancel() {
     api.setGraphWindow(initial.current.window);
     api.setSweepSeconds(initial.current.sweepSeconds);
+    api.setShowTangent(initial.current.showTangent);
     onClose();
   }
 
+  /** The whole panel as the app first opens it, not just the bounds: the
+   *  tangent line goes away with them. */
   function reset() {
     // per graph kind, since a window that suits the standard functions suits
     // neither arc group. The angle axis of the stored defaults is in degrees,
@@ -77,6 +86,7 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
     setError(null);
     api.setGraphWindow(d);
     api.setSweepSeconds(DEFAULT_SETTINGS.sweepSeconds);
+    api.setShowTangent(DEFAULT_SETTINGS.showTangent);
   }
 
   const field = (label: string, value: string, key: FieldKey) => (
@@ -97,6 +107,9 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
         )}
         {field(`Min ${xLabel}`, xMin, 'xMin')}
         {field(`Max ${xLabel}`, xMax, 'xMax')}
+        {/* the two axes measure different things, so they read as two pairs
+            rather than four numbers in a column */}
+        <hr className="settings-dialog__divider" />
         {field(`Min ${yLabel}`, yMin, 'yMin')}
         {field(`Max ${yLabel}`, yMax, 'yMax')}
         {error && <p className="settings-dialog__error">{error}</p>}
@@ -116,6 +129,7 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
             <span className="settings-dialog__slider-value">{api.sweepSeconds}s</span>
           </div>
         </div>
+        <hr className="settings-dialog__divider" />
         <div className="settings-dialog__actions">
           <button type="button" onClick={onClose}>
             OK
