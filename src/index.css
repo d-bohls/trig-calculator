@@ -55,6 +55,12 @@ body {
 button {
   font: inherit;
   color: inherit;
+  /* A button's label is there to be pressed, not read off and copied, and a
+     drag that starts on one - or a second click that lands quickly - leaves it
+     highlighted instead. That includes the panel titles, which are buttons
+     that look like headings. */
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 button:not(.menu-bar__item, .menu-bar__label, .icon-button) {
