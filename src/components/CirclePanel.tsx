@@ -4,6 +4,7 @@ import { useRef } from 'react';
 import type { CalculatorApi } from '../state/useCalculatorState';
 import type { ReactNode } from 'react';
 import { formatNumber } from '../trig/format';
+import { snapApproachingAngle, type AngleHold } from '../trig/snapAngle';
 import { lookupSymbolic, symbolicForFunction, symbolicRadians } from '../trig/symbolicTable';
 import {
   AngleMode,
@@ -125,6 +126,10 @@ function shortestPathUpdate(currentRadians: number, pointerRadians: number): num
 export default function CirclePanel({ api }: { api: CalculatorApi }) {
   const svgRef = useRef<SVGSVGElement>(null);
   const hitRef = useRef<SVGCircleElement>(null);
+  /** where the pointer was on the last move of this drag, and whatever
+   *  multiple it is currently sitting on - see snapApproachingAngle */
+  const lastAngle = useRef<number | null>(null);
+  const hold = useRef<AngleHold | null>(null);
   const dragging = useRef(false);
   const {
     radians,
@@ -198,16 +203,28 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
     return angle;
   }
 
-  /** Whole degrees, or the settings' own step while shift is held - the same
-   *  bargain the graph offers, and this is where it is most wanted: 30 and 45
-   *  are hard to hit with a finger on a circle this size. */
+  /** Whole degrees, except that a multiple of the settings' step reaches out
+   *  half a degree further to meet a drag coming towards it, and holds on
+   *  until the pointer leaves - or nothing but those multiples while shift is
+   *  held. */
   function turnTo(e: React.PointerEvent<SVGSVGElement>) {
     const degrees = shortestPathUpdate(radians, angleFromPointer(e.clientX, e.clientY));
     const step = api.angleStepDegrees;
-    api.setDegreesSnapped(e.shiftKey ? Math.round(degrees / step) * step : degrees);
+    if (e.shiftKey) {
+      api.setDegrees(Math.round(degrees / step) * step);
+      hold.current = null;
+    } else {
+      const snapped = snapApproachingAngle(degrees, lastAngle.current, step, hold.current);
+      hold.current = snapped.hold;
+      api.setDegrees(snapped.degrees);
+    }
+    lastAngle.current = degrees;
   }
 
   function handlePointerDown(e: React.PointerEvent<SVGSVGElement>) {
+    // a fresh drag has no direction yet, so its first move simply rounds
+    lastAngle.current = null;
+    hold.current = null;
     // The hit target answers for itself: a drag has to start on it, which is
     // the disc plus its ring. Everywhere else in the panel - the side labels,
     // the margins, the lengths below - scrolls the page instead, which on a
@@ -225,6 +242,8 @@ export default function CirclePanel({ api }: { api: CalculatorApi }) {
 
   function handlePointerUp(e: React.PointerEvent<SVGSVGElement>) {
     dragging.current = false;
+    lastAngle.current = null;
+    hold.current = null;
     e.currentTarget.releasePointerCapture(e.pointerId);
   }
 

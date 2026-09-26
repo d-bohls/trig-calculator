@@ -9,6 +9,7 @@ import type { CalculatorApi } from '../state/useCalculatorState';
 import { drawGraph, toMath, type PlotColors } from '../graph/drawGraph';
 import { getCurrentGraphPoint } from '../trig/currentPoint';
 import { displayAngle, formatNumber } from '../trig/format';
+import { snapApproachingAngle, type AngleHold } from '../trig/snapAngle';
 import {
   AngleMode,
   arcFunctionName,
@@ -27,6 +28,10 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const dragging = useRef(false);
+  /** where the pointer was on the last move of this drag, and whatever
+   *  multiple it is currently sitting on - see snapApproachingAngle */
+  const lastAngle = useRef<number | null>(null);
+  const hold = useRef<AngleHold | null>(null);
   const [size, setSize] = useState({ width: 400, height: 380 });
   const [dpr, setDpr] = useState(() => window.devicePixelRatio || 1);
   const [theme, setTheme] = useState(() => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
@@ -207,11 +212,22 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     if (!canvas) return;
     const rect = canvas.getBoundingClientRect();
     const [mathX] = toMath(graphWindow, clientX - rect.left, clientY - rect.top, rect.width, rect.height);
-    // Whole degrees, so dragging back and forth can't drift the angle - or the
-    // settings' own step while shift is held, which is how to land on 30 or 45
-    // exactly without reaching for the steppers.
+    // Whole degrees, except that a multiple of the settings' step reaches out
+    // half a degree further to meet a drag coming towards it, and holds on
+    // until the pointer leaves - or nothing but those multiples while shift is
+    // held.
     const step = api.angleStepDegrees;
-    const place = (d: number) => api.setDegreesSnapped(toStep ? Math.round(d / step) * step : d);
+    const place = (d: number) => {
+      if (toStep) {
+        api.setDegrees(Math.round(d / step) * step);
+        hold.current = null;
+      } else {
+        const snapped = snapApproachingAngle(d, lastAngle.current, step, hold.current);
+        hold.current = snapped.hold;
+        api.setDegrees(snapped.degrees);
+      }
+      lastAngle.current = d;
+    };
     if (!inverseMode) {
       // x is the angle itself, in whichever unit the axis is showing
       place(angleMode === AngleMode.Degrees ? mathX : (mathX * 180) / PI);
@@ -294,6 +310,9 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
           onPointerDown={(e) => {
             e.currentTarget.setPointerCapture(e.pointerId);
             dragging.current = true;
+            // a fresh drag has no direction yet, so its first move rounds
+            lastAngle.current = null;
+            hold.current = null;
             handlePointer(e.clientX, e.clientY, e.shiftKey);
           }}
           onPointerMove={(e) => {
@@ -301,6 +320,8 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
           }}
           onPointerUp={(e) => {
             dragging.current = false;
+            lastAngle.current = null;
+            hold.current = null;
             e.currentTarget.releasePointerCapture(e.pointerId);
           }}
           onContextMenu={(e) => {
