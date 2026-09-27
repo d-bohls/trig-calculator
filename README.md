@@ -3,6 +3,9 @@
 A TypeScript + React port of a Visual Basic 6 trig calculator originally written in 2002.
 The VB6 project is not in this repository; this is the port that replaced it.
 
+**[Open the calculator](https://d-bohls.github.io/trig-calculator/)** - the current `main`, published
+to GitHub Pages.
+
 ## Running
 
 ```
