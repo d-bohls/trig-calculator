@@ -45,6 +45,11 @@ const DEFAULT_WINDOWS: Record<GraphKind, Bounds> = {
   [GraphKind.ArcUnbounded]: { xMin: -20, xMax: 20, yMin: -105, yMax: 195 },
 };
 
+/** System follows the device's light or dark setting, and keeps following it
+ *  if that changes while the app is open; the other two pin the app to one. */
+export const THEMES = ['light', 'dark', 'system'] as const;
+export type Theme = (typeof THEMES)[number];
+
 export interface PersistedSettings {
   /** the angle, stored in degrees - see degreesFromRadians in
    *  useCalculatorState for why degrees rather than radians */
@@ -62,6 +67,7 @@ export interface PersistedSettings {
    *  kinds, xMin/xMax bound the ratio and yMin/yMax the angle */
   graphWindows: Record<GraphKind, Bounds>;
   showTangent: boolean;
+  theme: Theme;
 }
 
 export const DEFAULT_SETTINGS: PersistedSettings = {
@@ -79,6 +85,7 @@ export const DEFAULT_SETTINGS: PersistedSettings = {
   sweepSeconds: 12,
   graphWindows: DEFAULT_WINDOWS,
   showTangent: false,
+  theme: 'system',
 };
 
 /** One kind's default bounds, with its angle axis converted to the unit in use. */
@@ -132,7 +139,10 @@ export function loadSettings(): PersistedSettings {
     if (parsed.degrees === undefined && typeof parsed.radians === 'number') {
       parsed.degrees = (parsed.radians * 180) / PI;
     }
-    return { ...DEFAULT_SETTINGS, ...parsed, graphWindows: migrateWindows(parsed) };
+    // saves from before there was a choice have no theme, and anything else
+    // unrecognized would leave the page in neither theme's colors
+    const theme = THEMES.includes(parsed.theme) ? parsed.theme : DEFAULT_SETTINGS.theme;
+    return { ...DEFAULT_SETTINGS, ...parsed, graphWindows: migrateWindows(parsed), theme };
   } catch {
     return { ...DEFAULT_SETTINGS };
   }

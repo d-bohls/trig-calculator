@@ -1,25 +1,17 @@
 // The graph window size (formerly Forms/frmZoom.frm) and how long the play
-// button's sweep takes. Every field applies
-// live; Cancel reverts everything back to how it was when the dialog was
-// opened. The tangent-line toggle sits on the panel's own toolbar, next to
-// the button that opens this dialog.
+// button's sweep takes. Every field applies live; the dialog's Cancel puts it
+// back. The tangent-line toggle sits on the panel's own toolbar, next to the
+// button that opens these settings.
 
-import { useRef, useState } from 'react';
+import { useState } from 'react';
 import type { CalculatorApi } from '../../state/useCalculatorState';
 import { DEFAULT_SETTINGS, defaultGraphWindow } from '../../state/persistence';
 import { AngleMode } from '../../trig/trigMath';
-import Modal from '../Modal';
-import './SettingsDialog.css';
+import { restoreGraphSettings } from './settingsSnapshots';
 
 type FieldKey = 'xMin' | 'xMax' | 'yMin' | 'yMax';
 
-export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorApi; onClose: () => void }) {
-  const initial = useRef({
-    window: api.graphWindow,
-    sweepSeconds: api.sweepSeconds,
-    showTangent: api.showTangent,
-  });
-
+export default function GraphSettingsTab({ api }: { api: CalculatorApi }) {
   const [xMin, setXMin] = useState(String(api.graphWindow.xMin));
   const [xMax, setXMax] = useState(String(api.graphWindow.xMax));
   const [yMin, setYMin] = useState(String(api.graphWindow.yMin));
@@ -62,15 +54,6 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
     tryApply(next);
   }
 
-  /** Puts the panel back the way it was opened - including what Reset changed
-   *  beyond this dialog's own fields. */
-  function cancel() {
-    api.setGraphWindow(initial.current.window);
-    api.setSweepSeconds(initial.current.sweepSeconds);
-    api.setShowTangent(initial.current.showTangent);
-    onClose();
-  }
-
   /** The whole panel as the app first opens it, not just the bounds: the
    *  tangent line goes away with them. */
   function reset() {
@@ -84,9 +67,7 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
     setYMin(String(d.yMin));
     setYMax(String(d.yMax));
     setError(null);
-    api.setGraphWindow(d);
-    api.setSweepSeconds(DEFAULT_SETTINGS.sweepSeconds);
-    api.setShowTangent(DEFAULT_SETTINGS.showTangent);
+    restoreGraphSettings(api, { window: d, sweepSeconds: DEFAULT_SETTINGS.sweepSeconds, showTangent: DEFAULT_SETTINGS.showTangent });
   }
 
   const field = (label: string, value: string, key: FieldKey) => (
@@ -97,51 +78,42 @@ export default function GraphSettingsDialog({ api, onClose }: { api: CalculatorA
   );
 
   return (
-    <Modal title="Graph Settings" onClose={cancel}>
-      <div className="settings-dialog">
-        {api.inverseMode && (
-          <p className="settings-dialog__hint">
-            Function Type is set to Arc, so the axes are swapped: the horizontal axis is the input ratio and the
-            vertical axis is the resulting angle.
-          </p>
-        )}
-        {field(`Min ${xLabel}`, xMin, 'xMin')}
-        {field(`Max ${xLabel}`, xMax, 'xMax')}
-        {/* the two axes measure different things, so they read as two pairs
-            rather than four numbers in a column */}
-        <hr className="settings-dialog__divider" />
-        {field(`Min ${yLabel}`, yMin, 'yMin')}
-        {field(`Max ${yLabel}`, yMax, 'yMax')}
-        {error && <p className="settings-dialog__error">{error}</p>}
-        <hr className="settings-dialog__divider" />
-        <div className="settings-dialog__row">
-          <label htmlFor="graph-settings-sweep">Sweep time</label>
-          <div className="settings-dialog__slider">
-            <input
-              id="graph-settings-sweep"
-              type="range"
-              min={2}
-              max={60}
-              step={1}
-              value={api.sweepSeconds}
-              onChange={(e) => api.setSweepSeconds(Number(e.target.value))}
-            />
-            <span className="settings-dialog__slider-value">{api.sweepSeconds}s</span>
-          </div>
-        </div>
-        <hr className="settings-dialog__divider" />
-        <div className="settings-dialog__actions">
-          <button type="button" onClick={onClose}>
-            OK
-          </button>
-          <button type="button" onClick={cancel}>
-            Cancel
-          </button>
-          <button type="button" onClick={reset}>
-            Reset
-          </button>
+    <>
+      {api.inverseMode && (
+        <p className="settings-dialog__hint">
+          Function Type is set to Arc, so the axes are swapped: the horizontal axis is the input ratio and the
+          vertical axis is the resulting angle.
+        </p>
+      )}
+      {field(`Min ${xLabel}`, xMin, 'xMin')}
+      {field(`Max ${xLabel}`, xMax, 'xMax')}
+      {/* the two axes measure different things, so they read as two pairs
+          rather than four numbers in a column */}
+      <hr className="settings-dialog__divider" />
+      {field(`Min ${yLabel}`, yMin, 'yMin')}
+      {field(`Max ${yLabel}`, yMax, 'yMax')}
+      {error && <p className="settings-dialog__error">{error}</p>}
+      <hr className="settings-dialog__divider" />
+      <div className="settings-dialog__row">
+        <label htmlFor="graph-settings-sweep">Sweep time</label>
+        <div className="settings-dialog__slider">
+          <input
+            id="graph-settings-sweep"
+            type="range"
+            min={2}
+            max={60}
+            step={1}
+            value={api.sweepSeconds}
+            onChange={(e) => api.setSweepSeconds(Number(e.target.value))}
+          />
+          <span className="settings-dialog__slider-value">{api.sweepSeconds}s</span>
         </div>
       </div>
-    </Modal>
+      <div className="settings-dialog__reset">
+        <button type="button" aria-label="Reset Graph" onClick={reset}>
+          Reset
+        </button>
+      </div>
+    </>
   );
 }

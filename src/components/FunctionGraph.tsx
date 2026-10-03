@@ -34,13 +34,14 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const hold = useRef<AngleHold | null>(null);
   const [size, setSize] = useState({ width: 400, height: 380 });
   const [dpr, setDpr] = useState(() => window.devicePixelRatio || 1);
-  const [theme, setTheme] = useState(() => (matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light'));
+  const [systemDark, setSystemDark] = useState(() => matchMedia('(prefers-color-scheme: dark)').matches);
   const [printing, setPrinting] = useState(false);
   const [sweeping, setSweeping] = useState(false);
   const sweepFrame = useRef<number | null>(null);
 
   const { radians, functionMode, angleMode, inverseMode, graphWindow, selectedRatio, degrees, showTangent } = api;
   const { anglePlaces, resultPlaces } = api;
+  const theme = api.theme === 'system' ? (systemDark ? 'dark' : 'light') : api.theme;
   const currentPoint = getCurrentGraphPoint({ radians, degrees, angleMode, inverseMode, ratio: selectedRatio });
 
   function stopSweep() {
@@ -135,10 +136,11 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   // The plot is painted, not styled, so it can't follow the theme on its own:
   // the colors are read off the canvas below and handed to the drawing. That
   // reading has to happen again when the theme changes, and nothing about the
-  // element changes to say that it has.
+  // element changes to say that it has. A theme chosen in the settings comes
+  // through the api; the device's is watched here, for when System is chosen.
   useEffect(() => {
     const query = matchMedia('(prefers-color-scheme: dark)');
-    const onChange = () => setTheme(query.matches ? 'dark' : 'light');
+    const onChange = () => setSystemDark(query.matches);
     query.addEventListener('change', onChange);
     return () => query.removeEventListener('change', onChange);
   }, []);

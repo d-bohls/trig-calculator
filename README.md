@@ -23,7 +23,7 @@ via `.github/workflows/deploy.yml`.
 - `src/state/` - app state (`useCalculatorState`) and localStorage persistence, replacing the
   VB6 registry-backed globals in `modSettings.bas`.
 - `src/components/` - the circle (SVG), function graph (canvas), the function controls, and the
-  settings dialogs.
+  settings dialog.
 
 ## Differences from the original
 
@@ -35,4 +35,5 @@ via `.github/workflows/deploy.yml`.
   browser's native print instead of the old unreliable `PrintForm`.
 - The angle is stored in degrees rather than radians, so repeated stepping can't accumulate
   floating point drift.
-- Supports light/dark theme and works down to mobile widths.
+- Has light and dark themes, following the device or set in the settings, and works down to
+  mobile widths.

@@ -51,8 +51,128 @@
 .settings-dialog__actions {
   display: flex;
   gap: 8px;
+  justify-content: flex-end;
+}
+
+/* Folder tabs. They overlap the top edge of the box below by its 1px border,
+   so the unselected ones sit on that line and the selected one covers it with
+   its own background - one shape with the box it opens, which is what says
+   that the box, and the Reset inside it, belong to that tab. They are drawn
+   as tabs rather than as a segmented control so they don't look like the
+   theme switch they sit above. Two classes deep to beat the global button
+   rules in index.css. */
+.settings-tabs {
+  display: flex;
+  gap: 2px;
+  padding: 0 8px;
+  margin-bottom: -1px;
+  position: relative;
+  z-index: 1;
+}
+
+.settings-dialog .settings-tabs__tab {
+  border: 1px solid var(--border-color);
+  border-radius: 6px 6px 0 0;
+  background: var(--bg);
+  color: var(--muted-text);
+  padding: 5px 14px;
+}
+
+.settings-dialog .settings-tabs__tab[aria-selected='true'] {
+  background: var(--panel-bg);
+  color: var(--text-color);
+  border-bottom-color: var(--panel-bg);
+}
+
+.settings-sheet {
+  display: grid;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  padding: 12px;
+}
+
+/* All in the one cell, so the box is as tall as the tallest tab. The ones not
+   showing keep their space but are invisible, which also takes them out of
+   the keyboard order and away from screen readers. */
+.settings-sheet__panel {
+  grid-area: 1 / 1;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.settings-sheet__panel[hidden] {
+  display: flex;
+  visibility: hidden;
+}
+
+/* At the foot of the tab's box however short the tab is, with a rule of its
+   own above it - without one it read as belonging to whatever setting came
+   last, the sweep slider on the Graph tab. Centered, so it doesn't line up
+   with OK and Cancel below the box and read as a third button of theirs. */
+.settings-dialog__reset {
+  display: flex;
   justify-content: center;
-  margin-top: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-color);
+}
+
+/* a label over its control, for one too wide to share a row */
+.settings-dialog__field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+}
+
+/* Radio buttons drawn as a row of joined segments, the chosen one filled. */
+.segmented {
+  display: inline-flex;
+  align-self: flex-start;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.segmented__option {
+  position: relative;
+}
+
+.segmented__option + .segmented__option {
+  border-left: 1px solid var(--border-color);
+}
+
+/* still there for the keyboard and screen readers, just not drawn */
+.segmented__option input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.segmented__option span {
+  display: block;
+  padding: 5px 14px;
+  font-size: 14px;
+  user-select: none;
+}
+
+.segmented__option input:checked + span {
+  background: var(--text-color);
+  color: var(--panel-bg);
+}
+
+.segmented__option input:focus-visible + span {
+  outline: 2px solid #2563eb;
+  outline-offset: -2px;
+}
+
+@media (hover: hover) {
+  .segmented__option input:not(:checked):hover + span {
+    background: var(--hover-bg);
+  }
 }
 
 .settings-dialog__stepped {

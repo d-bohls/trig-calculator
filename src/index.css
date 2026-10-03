@@ -24,8 +24,38 @@
   -webkit-font-smoothing: antialiased;
 }
 
+/* The theme setting. System is no attribute at all, so the page follows the
+   device; Light and Dark are written on the root by the app and override it.
+   color-scheme goes with them, so the browser's own parts - scrollbars, the
+   slider - match the page rather than the device. */
+:root[data-theme='light'] {
+  color-scheme: light;
+}
+
+/* The dark palette is written twice, once for choosing it and once for the
+   device asking for it, since one rule can't be both an attribute selector and
+   a media query. Change one, change the other. */
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0f1115;
+  --panel-bg: #1a1d24;
+  --text-color: #e5e7eb;
+  --muted-text: #9ca3af;
+  --border-color: #333846;
+  --hover-bg: #262a35;
+
+  /* a shade off the panel, so the plot still reads as a thing sitting on it
+     rather than a hole in it */
+  --plot-bg: #12151b;
+  --plot-ink: #e5e7eb;
+  --plot-grid: #6b7280;
+  --plot-curve: #60a5fa;
+  --plot-tangent: #34d399;
+  --plot-gridline: #20242d;
+}
+
 @media (prefers-color-scheme: dark) {
-  :root {
+  :root:not([data-theme='light']) {
     --bg: #0f1115;
     --panel-bg: #1a1d24;
     --text-color: #e5e7eb;

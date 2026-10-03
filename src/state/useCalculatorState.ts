@@ -1,7 +1,7 @@
 // Port of the global state + behavior spread across modSettings.bas,
 // modCircle.bas and frmCalc.frm's UpdateResults chain.
 
-import { useCallback, useEffect, useMemo, useReducer } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useReducer } from 'react';
 import {
   AngleMode,
   getInverseFunctionRange,
@@ -19,6 +19,7 @@ import {
   loadSettings,
   type PersistedSettings,
   saveSettings,
+  type Theme,
 } from './persistence';
 
 export interface GraphWindow {
@@ -59,6 +60,7 @@ interface State {
    *  never disturbs a window you set up for another. */
   graphWindows: Record<GraphKind, GraphWindow>;
   showTangent: boolean;
+  theme: Theme;
   /** snapshot of the angle taken the instant inverse mode is turned on, so
    *  turning it back off restores the angle the user actually had (fixes
    *  the VB6 bug where switching to/from the arc functions lost the angle) */
@@ -78,6 +80,7 @@ type Action =
   | { type: 'SET_DECIMAL_PLACES'; anglePlaces: number; resultPlaces: number }
   | { type: 'SET_ANGLE_STEP'; degrees: number }
   | { type: 'SET_SWEEP_SECONDS'; seconds: number }
+  | { type: 'SET_THEME'; theme: Theme }
   | { type: 'RESTORE_GRAPH_WINDOW_DEFAULTS' }
   | { type: 'RESTORE_MASK_DEFAULTS' };
 
@@ -103,6 +106,7 @@ function init(): State {
     sweepSeconds: s.sweepSeconds,
     graphWindows: s.graphWindows,
     showTangent: s.showTangent,
+    theme: s.theme,
     savedDegrees: null,
   };
 }
@@ -199,6 +203,8 @@ function reducer(state: State, action: Action): State {
       return { ...state, angleStepDegrees: action.degrees };
     case 'SET_SWEEP_SECONDS':
       return { ...state, sweepSeconds: action.seconds };
+    case 'SET_THEME':
+      return { ...state, theme: action.theme };
     case 'RESTORE_GRAPH_WINDOW_DEFAULTS': {
       const kind = graphKindOf(state.inverseMode, state.functionMode);
       return {
@@ -230,9 +236,21 @@ export function useCalculatorState() {
       sweepSeconds: state.sweepSeconds,
       graphWindows: state.graphWindows,
       showTangent: state.showTangent,
+      theme: state.theme,
     };
     saveSettings(toSave);
   }, [state]);
+
+  // System is the stylesheet's own default, which follows the device; a fixed
+  // choice is written on the root element for index.css to override it with.
+  // Before paint, so a change made in the settings shows on the frame it was
+  // made in, and so the graph - which reads its colors off the computed style
+  // in an ordinary effect, after this one - reads the new ones.
+  useLayoutEffect(() => {
+    const root = document.documentElement;
+    if (state.theme === 'system') delete root.dataset.theme;
+    else root.dataset.theme = state.theme;
+  }, [state.theme]);
 
   const radians = state.degrees / DEGREES_PER_RADIAN;
   const graphKind = graphKindOf(state.inverseMode, state.functionMode);
@@ -283,6 +301,7 @@ export function useCalculatorState() {
   );
   const setAngleStep = useCallback((degrees: number) => dispatch({ type: 'SET_ANGLE_STEP', degrees }), []);
   const setSweepSeconds = useCallback((seconds: number) => dispatch({ type: 'SET_SWEEP_SECONDS', seconds }), []);
+  const setTheme = useCallback((theme: Theme) => dispatch({ type: 'SET_THEME', theme }), []);
   const restoreGraphWindowDefaults = useCallback(() => dispatch({ type: 'RESTORE_GRAPH_WINDOW_DEFAULTS' }), []);
   const restoreMaskDefaults = useCallback(() => dispatch({ type: 'RESTORE_MASK_DEFAULTS' }), []);
 
@@ -309,6 +328,7 @@ export function useCalculatorState() {
     setDecimalPlaces,
     setAngleStep,
     setSweepSeconds,
+    setTheme,
     restoreGraphWindowDefaults,
     restoreMaskDefaults,
   };

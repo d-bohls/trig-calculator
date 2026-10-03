@@ -1,5 +1,5 @@
-import { describe, expect, it } from 'vitest';
-import { defaultGraphWindow, GraphKind, graphKindOf } from './persistence';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { defaultGraphWindow, GraphKind, graphKindOf, loadSettings } from './persistence';
 import { AngleMode, PI, TrigFunction } from '../trig/trigMath';
 
 describe('graphKindOf', () => {
@@ -45,5 +45,24 @@ describe('defaultGraphWindow', () => {
   it('gives the unbounded arc group room to show its asymptotes', () => {
     const w = defaultGraphWindow(GraphKind.ArcUnbounded, AngleMode.Degrees);
     expect([w.xMin, w.xMax]).toEqual([-20, 20]);
+  });
+});
+
+describe('loadSettings theme', () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  function load(saved: object) {
+    vi.stubGlobal('localStorage', { getItem: () => JSON.stringify(saved) });
+    return loadSettings();
+  }
+
+  it('keeps a saved choice', () => {
+    expect(load({ theme: 'dark' }).theme).toBe('dark');
+    expect(load({ theme: 'light' }).theme).toBe('light');
+  });
+
+  it('follows the system for saves from before there was a choice, or a bad value', () => {
+    expect(load({ degrees: 45 }).theme).toBe('system');
+    expect(load({ theme: 'sepia' }).theme).toBe('system');
   });
 });
