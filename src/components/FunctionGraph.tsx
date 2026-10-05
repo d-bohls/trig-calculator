@@ -10,6 +10,7 @@ import { drawGraph, toMath, type PlotColors } from '../graph/drawGraph';
 import { getCurrentGraphPoint } from '../trig/currentPoint';
 import { displayAngle, formatNumber } from '../trig/format';
 import { snapApproachingAngle, type AngleHold } from '../trig/snapAngle';
+import { sweepSegments, wholeDegreeSweep } from '../trig/sweep';
 import {
   AngleMode,
   arcFunctionName,
@@ -38,21 +39,34 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
   const [printing, setPrinting] = useState(false);
   const [sweeping, setSweeping] = useState(false);
   const sweepFrame = useRef<number | null>(null);
+  /** the angle the sweep last drew, for a sweep stopped partway to settle from */
+  const sweepAngle = useRef<number | null>(null);
 
   const { radians, functionMode, angleMode, inverseMode, graphWindow, selectedRatio, degrees, showTangent } = api;
   const { anglePlaces, resultPlaces } = api;
   const theme = api.theme === 'system' ? (systemDark ? 'dark' : 'light') : api.theme;
   const currentPoint = getCurrentGraphPoint({ radians, degrees, angleMode, inverseMode, ratio: selectedRatio });
 
+  /** Stopped partway, a sweep comes to rest on the nearest whole degree rather
+   *  than wherever the last frame happened to fall. */
   function stopSweep() {
     if (sweepFrame.current !== null) {
       cancelAnimationFrame(sweepFrame.current);
       sweepFrame.current = null;
+      // + 0, because Math.round(-0.4) is -0, which would show as "-0.00"
+      if (sweepAngle.current !== null) api.setDegrees(Math.round(sweepAngle.current) + 0);
     }
+    sweepAngle.current = null;
     setSweeping(false);
   }
 
-  useEffect(() => stopSweep, []);
+  // going away mid-sweep only has to stop the frames, with no angle to settle
+  useEffect(
+    () => () => {
+      if (sweepFrame.current !== null) cancelAnimationFrame(sweepFrame.current);
+    },
+    [],
+  );
 
   // A sweep is something to watch, not a mode to be trapped in, so it yields
   // the moment the user reaches for anything. The listener only cancels; it
@@ -66,39 +80,40 @@ export default function FunctionGraph({ api }: { api: CalculatorApi }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sweeping]);
 
-  /** Walks the point from one edge of the window to the other. The range and
-   *  the function are read once, at the start, so the sweep is a self-contained
-   *  animation rather than something that changes shape underneath itself. */
+  /** Walks the point from one edge of the window to the other, turning at a
+   *  steady speed round the circle - see ../trig/sweep. The range and the function are read once, at the start, so
+   *  the sweep is a self-contained animation rather than something that
+   *  changes shape underneath itself. */
   function startSweep() {
     stopSweep();
-    const fn = functionMode;
-    const unit = angleMode;
-    const inverse = inverseMode;
-    const from = inverse ? clampToArcDomain(fn, graphWindow.xMin) : graphWindow.xMin;
-    const to = inverse ? clampToArcDomain(fn, graphWindow.xMax) : graphWindow.xMax;
-    if (!(to > from)) return;
+    const segments = sweepSegments({
+      fn: functionMode,
+      inverseMode,
+      angleMode,
+      xMin: graphWindow.xMin,
+      xMax: graphWindow.xMax,
+    });
+    const sweep = wholeDegreeSweep(segments);
+    if (!(sweep.length > 0)) return;
 
-    const apply = (xval: number) => {
-      if (!inverse) {
-        api.setRadians(unit === AngleMode.Degrees ? (xval * PI) / 180 : xval);
-        return;
-      }
-      const { radians: r, ok } = getRadians(fn, xval);
-      if (ok) api.setRadians(r);
-    };
-
-    // read once, so dragging the speed slider can't stretch a sweep already
-    // under way. Measured off the clock rather than counted in frames, so it
-    // takes the same time on any machine.
-    const sweepMs = Math.max(1, api.sweepSeconds) * 1000;
-    const startedAt = performance.now();
+    // read once, so dragging the speed slider can't change a sweep already
+    // under way. Taken off the clock rather than counted in frames, so it goes
+    // at the same speed on any machine and any refresh rate.
+    const degreesPerMs = 360 / (Math.max(1, api.revolutionSeconds) * 1000);
+    // timed from the first frame drawn, not the click, so a first frame that
+    // comes late doesn't skip the start of the sweep
+    let startedAt: number | null = null;
     const step = (now: number) => {
-      const progress = Math.min(1, (now - startedAt) / sweepMs);
-      apply(from + (to - from) * progress);
-      if (progress < 1) {
+      startedAt ??= now;
+      const distance = Math.min(sweep.length, (now - startedAt) * degreesPerMs);
+      sweepAngle.current = sweep.angleAt(distance);
+      api.setDegrees(sweepAngle.current);
+      if (distance < sweep.length) {
         sweepFrame.current = requestAnimationFrame(step);
       } else {
+        // the last frame is the end itself, a whole degree already
         sweepFrame.current = null;
+        sweepAngle.current = null;
         setSweeping(false);
       }
     };

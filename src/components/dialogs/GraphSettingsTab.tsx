@@ -1,5 +1,5 @@
-// The graph window size (formerly Forms/frmZoom.frm) and how long the play
-// button's sweep takes. Every field applies live; the dialog's Cancel puts it
+// The graph window size (formerly Forms/frmZoom.frm) and how fast the play
+// button's sweep turns. Every field applies live; the dialog's Cancel puts it
 // back. The tangent-line toggle sits on the panel's own toolbar, next to the
 // button that opens these settings.
 
@@ -67,7 +67,7 @@ export default function GraphSettingsTab({ api }: { api: CalculatorApi }) {
     setYMin(String(d.yMin));
     setYMax(String(d.yMax));
     setError(null);
-    restoreGraphSettings(api, { window: d, sweepSeconds: DEFAULT_SETTINGS.sweepSeconds, showTangent: DEFAULT_SETTINGS.showTangent });
+    restoreGraphSettings(api, { window: d, revolutionSeconds: DEFAULT_SETTINGS.revolutionSeconds, showTangent: DEFAULT_SETTINGS.showTangent });
   }
 
   const field = (label: string, value: string, key: FieldKey) => (
@@ -95,7 +95,7 @@ export default function GraphSettingsTab({ api }: { api: CalculatorApi }) {
       {error && <p className="settings-dialog__error">{error}</p>}
       <hr className="settings-dialog__divider" />
       <div className="settings-dialog__row">
-        <label htmlFor="graph-settings-sweep">Sweep time</label>
+        <label htmlFor="graph-settings-sweep">Time per revolution</label>
         <div className="settings-dialog__slider">
           <input
             id="graph-settings-sweep"
@@ -103,10 +103,10 @@ export default function GraphSettingsTab({ api }: { api: CalculatorApi }) {
             min={2}
             max={60}
             step={1}
-            value={api.sweepSeconds}
-            onChange={(e) => api.setSweepSeconds(Number(e.target.value))}
+            value={api.revolutionSeconds}
+            onChange={(e) => api.setRevolutionSeconds(Number(e.target.value))}
           />
-          <span className="settings-dialog__slider-value">{api.sweepSeconds}s</span>
+          <span className="settings-dialog__slider-value">{api.revolutionSeconds}s</span>
         </div>
       </div>
       <div className="settings-dialog__reset">

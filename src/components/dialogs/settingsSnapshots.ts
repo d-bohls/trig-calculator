@@ -25,11 +25,11 @@ export function restoreFunctionSettings(api: CalculatorApi, s: ReturnType<typeof
 /** What Cancel has to put back for the Graph tab - including what Reset changes
  *  beyond the tab's own fields. */
 export function snapshotGraphSettings(api: CalculatorApi) {
-  return { window: api.graphWindow, sweepSeconds: api.sweepSeconds, showTangent: api.showTangent };
+  return { window: api.graphWindow, revolutionSeconds: api.revolutionSeconds, showTangent: api.showTangent };
 }
 
 export function restoreGraphSettings(api: CalculatorApi, s: ReturnType<typeof snapshotGraphSettings>) {
   api.setGraphWindow(s.window);
-  api.setSweepSeconds(s.sweepSeconds);
+  api.setRevolutionSeconds(s.revolutionSeconds);
   api.setShowTangent(s.showTangent);
 }

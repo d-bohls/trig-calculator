@@ -61,8 +61,10 @@ export interface PersistedSettings {
   resultPlaces: number;
   /** how many whole degrees the angle steppers move per click */
   angleStepDegrees: number;
-  /** seconds one automated sweep takes, edge to edge of the graph window */
-  sweepSeconds: number;
+  /** how fast the play button's sweep goes: the seconds it takes the angle to
+   *  go once round the circle. Not the time to cross the graph, which would
+   *  speed the circle up whenever the graph was zoomed out. */
+  revolutionSeconds: number;
   /** one window per graph kind, each as laid out on screen - so for the arc
    *  kinds, xMin/xMax bound the ratio and yMin/yMax the angle */
   graphWindows: Record<GraphKind, Bounds>;
@@ -80,9 +82,11 @@ export const DEFAULT_SETTINGS: PersistedSettings = {
   // 15 walks the angle through the special angles, so the exact values stay
   // populated as you step
   angleStepDegrees: 15,
-  // slow enough to follow the point round the circle as it goes, rather than
-  // just watching it arrive
-  sweepSeconds: 12,
+  // This is a teaching tool, so slow: slow enough to watch the point go round
+  // and see the curve and the ratios change with it, rather than just watching
+  // it arrive. Saves from before this setting have a sweepSeconds instead,
+  // which measured something else and is left behind.
+  revolutionSeconds: 10,
   graphWindows: DEFAULT_WINDOWS,
   showTangent: false,
   theme: 'system',

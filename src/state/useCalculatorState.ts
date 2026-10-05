@@ -54,7 +54,7 @@ interface State {
   anglePlaces: number;
   resultPlaces: number;
   angleStepDegrees: number;
-  sweepSeconds: number;
+  revolutionSeconds: number;
   /** one window per graph kind - see GraphKind in persistence.ts. The active
    *  one follows from inverseMode and functionMode, so switching between them
    *  never disturbs a window you set up for another. */
@@ -79,7 +79,7 @@ type Action =
   | { type: 'SET_SHOW_TANGENT'; show: boolean }
   | { type: 'SET_DECIMAL_PLACES'; anglePlaces: number; resultPlaces: number }
   | { type: 'SET_ANGLE_STEP'; degrees: number }
-  | { type: 'SET_SWEEP_SECONDS'; seconds: number }
+  | { type: 'SET_REVOLUTION_SECONDS'; seconds: number }
   | { type: 'SET_THEME'; theme: Theme }
   | { type: 'RESTORE_GRAPH_WINDOW_DEFAULTS' }
   | { type: 'RESTORE_MASK_DEFAULTS' };
@@ -103,7 +103,7 @@ function init(): State {
     anglePlaces: s.anglePlaces,
     resultPlaces: s.resultPlaces,
     angleStepDegrees: s.angleStepDegrees,
-    sweepSeconds: s.sweepSeconds,
+    revolutionSeconds: s.revolutionSeconds,
     graphWindows: s.graphWindows,
     showTangent: s.showTangent,
     theme: s.theme,
@@ -201,8 +201,8 @@ function reducer(state: State, action: Action): State {
       };
     case 'SET_ANGLE_STEP':
       return { ...state, angleStepDegrees: action.degrees };
-    case 'SET_SWEEP_SECONDS':
-      return { ...state, sweepSeconds: action.seconds };
+    case 'SET_REVOLUTION_SECONDS':
+      return { ...state, revolutionSeconds: action.seconds };
     case 'SET_THEME':
       return { ...state, theme: action.theme };
     case 'RESTORE_GRAPH_WINDOW_DEFAULTS': {
@@ -233,7 +233,7 @@ export function useCalculatorState() {
       anglePlaces: state.anglePlaces,
       resultPlaces: state.resultPlaces,
       angleStepDegrees: state.angleStepDegrees,
-      sweepSeconds: state.sweepSeconds,
+      revolutionSeconds: state.revolutionSeconds,
       graphWindows: state.graphWindows,
       showTangent: state.showTangent,
       theme: state.theme,
@@ -300,7 +300,10 @@ export function useCalculatorState() {
     [],
   );
   const setAngleStep = useCallback((degrees: number) => dispatch({ type: 'SET_ANGLE_STEP', degrees }), []);
-  const setSweepSeconds = useCallback((seconds: number) => dispatch({ type: 'SET_SWEEP_SECONDS', seconds }), []);
+  const setRevolutionSeconds = useCallback(
+    (seconds: number) => dispatch({ type: 'SET_REVOLUTION_SECONDS', seconds }),
+    [],
+  );
   const setTheme = useCallback((theme: Theme) => dispatch({ type: 'SET_THEME', theme }), []);
   const restoreGraphWindowDefaults = useCallback(() => dispatch({ type: 'RESTORE_GRAPH_WINDOW_DEFAULTS' }), []);
   const restoreMaskDefaults = useCallback(() => dispatch({ type: 'RESTORE_MASK_DEFAULTS' }), []);
@@ -327,7 +330,7 @@ export function useCalculatorState() {
     setShowTangent,
     setDecimalPlaces,
     setAngleStep,
-    setSweepSeconds,
+    setRevolutionSeconds,
     setTheme,
     restoreGraphWindowDefaults,
     restoreMaskDefaults,
